@@ -104,7 +104,7 @@ export class Ivya {
     this._engines.set('css', this._createCSSEngine())
     this._engines.set('nth', { queryAll: () => [] })
     this._engines.set('visible', this._createVisibleEngine())
-    this._engines.set('internal:control', { queryAll: () => [] })
+    this._engines.set('internal:control', this._createControlEngine())
     this._engines.set('internal:has', this._createHasEngine())
     this._engines.set('internal:has-not', this._createHasNotEngine())
     this._engines.set('internal:and', { queryAll: () => [] })
@@ -630,6 +630,17 @@ export class Ivya {
       return isElementVisible(root as Element) === Boolean(body)
         ? [root as Element]
         : []
+    }
+    return { queryAll }
+  }
+
+  private _createControlEngine(): SelectorEngine {
+    const queryAll = (root: SelectorRoot, body: string) => {
+      if (body === 'enter-frame' && root instanceof HTMLIFrameElement) {
+        const doc = root.contentDocument?.documentElement
+        return doc ? [doc] : []
+      }
+      return []
     }
     return { queryAll }
   }
