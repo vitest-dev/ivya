@@ -443,8 +443,14 @@ export class JavaScriptLocatorFactory implements LocatorFactory {
         return `or(${body})`
       case 'chain':
         return `locator(${body})`
-      case 'test-id':
-        return `getByTestId(${this.toTestIdValue(body)})`
+      case 'test-id': {
+        // special use case in vitest-browser-* packages
+        const value = this.toTestIdValue(body)
+        if (value.startsWith('\'__vitest_') && value.endsWith('__\'')) {
+          return 'page'
+        }
+        return `getByTestId(${value})`
+      }
       case 'text':
         return this.toCallWithExact('getByText', body, !!options.exact)
       case 'alt':

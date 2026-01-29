@@ -1,4 +1,4 @@
-import { getByRoleSelector, Ivya } from '../src'
+import { getByRoleSelector, Ivya, asLocator } from '../src'
 import { expect, test } from 'vitest'
 
 test('works correctly', () => {
@@ -41,4 +41,16 @@ test('file input', () => {
   expect(ivya.generateSelectorSimple(input)).toMatchInlineSnapshot(
     `"internal:testid=[data-testid="test2"s]"`
   )
+})
+
+test('vitest components with specific test id', () => {
+  const div = document.createElement('div')
+  div.dataset.testid = '__vitest_1__'
+  document.body.appendChild(div)
+
+  const ivya = Ivya.create({
+    browser: 'chromium',
+  })
+  expect(ivya.generateSelectorSimple(div)).toBe('internal:testid=[data-testid="__vitest_1__"s]')
+  expect(asLocator('javascript', ivya.generateSelectorSimple(div))).toBe('page')
 })
