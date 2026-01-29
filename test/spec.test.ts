@@ -20,3 +20,25 @@ test('works correctly', () => {
     ivya.queryLocatorSelector(`css=body >> ${buttonSelector}`)
   ).toBe(button)
 })
+
+test('file input', () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  document.body.appendChild(input)
+
+  const ivya = Ivya.create({
+    browser: 'chromium',
+  })
+
+  expect(ivya.generateSelectorSimple(input)).toMatchInlineSnapshot(
+    `"input[type="file"]"`
+  )
+
+  input.id = 'test1'
+  expect(ivya.generateSelectorSimple(input)).toMatchInlineSnapshot(`"#test1"`)
+
+  input.dataset.testid = 'test2'
+  expect(ivya.generateSelectorSimple(input)).toMatchInlineSnapshot(
+    `"internal:testid=[data-testid="test2"s]"`
+  )
+})
