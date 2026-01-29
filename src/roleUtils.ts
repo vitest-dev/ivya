@@ -186,6 +186,12 @@ const kImplicitRoleByTagName: {
     if (type === 'hidden') {
       return ''
     }
+    // File inputs do not have a role by the spec: https://www.w3.org/TR/html-aam-1.0/#el-input-file.
+    // However, there are open issues about fixing it: https://github.com/w3c/aria/issues/1926.
+    // All browsers report it as a button, and it is rendered as a button, so we do "button".
+    if (type === 'file') {
+      return 'button'
+    }
     return (
       {
         button: 'button',
