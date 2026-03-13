@@ -59,17 +59,22 @@ describe('basic', () => {
       {
         "captured": [
           {
-            "children": [
-              "Hello",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 1,
-            "name": "",
+            "name": "Hello",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
         ],
         "pass": true,
         "rendered": "
-      - heading [level=1]: Hello
+      - heading "Hello" [level=1]
       ",
       }
     `)
@@ -81,18 +86,24 @@ describe('basic', () => {
       {
         "captured": [
           {
-            "children": [
-              "Click",
-            ],
-            "name": "",
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "Click",
+            "props": {
+              "url": "/foo",
+            },
+            "receivesPointerEvents": true,
             "role": "link",
-            "url": "/foo",
           },
         ],
         "pass": true,
         "rendered": "
-      - link:
-        - text: Click
+      - link "Click":
         - /url: /foo
       ",
       }
@@ -106,7 +117,7 @@ describe('basic', () => {
         "captured": [
           "Not a link",
         ],
-        "pass": true,
+        "pass": false,
         "rendered": "
       - text: Not a link
       ",
@@ -120,10 +131,19 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "X",
             ],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "Close",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
         ],
@@ -141,10 +161,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Warning!",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "alert",
           },
         ],
@@ -162,10 +189,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Visible",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -187,21 +221,45 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "checked": true,
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "A",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "checkbox",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "checked": false,
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "B",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "checkbox",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "checked": "mixed",
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "C",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "checkbox",
           },
         ],
@@ -221,23 +279,46 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   "One",
                 ],
+                "disabled": undefined,
+                "level": 0,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "listitem",
               },
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   "Two",
                 ],
+                "disabled": undefined,
+                "level": 0,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "listitem",
               },
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "list",
           },
         ],
@@ -260,8 +341,15 @@ describe('basic', () => {
         "captured": [
           "Name",
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "Name",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
@@ -283,10 +371,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "hello",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -310,16 +405,23 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
-              "helloworld",
+              "hello world",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "list",
           },
         ],
         "pass": true,
         "rendered": "
-      - list: helloworld
+      - list: hello world
       ",
       }
     `)
@@ -334,11 +436,11 @@ describe('basic', () => {
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
-          "OneTwoThree",
+          "One Two Three",
         ],
-        "pass": true,
+        "pass": false,
         "rendered": "
-      - text: OneTwoThree
+      - text: One Two Three
       ",
       }
     `)
@@ -351,11 +453,11 @@ describe('basic', () => {
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
-          "OneTwoThree",
+          "One Two Three",
         ],
-        "pass": true,
+        "pass": false,
         "rendered": "
-      - text: OneTwoThree
+      - text: One Two Three
       ",
       }
     `)
@@ -368,10 +470,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Line 1 Line 2 Line 3",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -390,10 +499,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Visible",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -414,10 +530,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Visible",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -439,10 +562,19 @@ describe('basic', () => {
         "captured": [
           "HelloWorld",
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "X",
             ],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "Hello World",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
         ],
@@ -462,8 +594,15 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "Logo",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "img",
           },
         ],
@@ -477,14 +616,27 @@ describe('basic', () => {
 
   // -- Gap: IMG empty alt -> presentation (skipped)
   test('img with empty alt has presentation role (children promoted)', () => {
-    const result = runPipeline('<img alt="">')
+    const result = runPipeline('<main><img alt=""></main>')
     // Empty alt = presentation role, which is skipped (no node emitted)
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
-        "captured": [],
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "main",
+          },
+        ],
         "pass": true,
         "rendered": "
-
+      - main
       ",
       }
     `)
@@ -506,53 +658,120 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "checked": false,
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "radio",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
-            "name": "",
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "Submit",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
-            "name": "",
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "Reset",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
-            "name": "",
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "Submit",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
-            "children": [],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [
+              "50",
+            ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "slider",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "searchbox",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "checked": false,
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "checkbox",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
         "pass": true,
         "rendered": "
       - radio
-      - button
-      - button
-      - button
-      - slider
+      - button "Submit"
+      - button "Reset"
+      - button "Submit"
+      - slider: 50
       - searchbox
       - checkbox
       - textbox
@@ -568,23 +787,38 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
-                "children": [
-                  "A",
-                ],
-                "name": "",
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
+                "checked": false,
+                "children": [],
+                "disabled": undefined,
+                "name": "A",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "option",
+                "selected": true,
               },
             ],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "combobox",
           },
         ],
         "pass": true,
         "rendered": "
       - combobox:
-        - option: A
+        - option "A" [selected]
       ",
       }
     `)
@@ -597,8 +831,15 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
@@ -617,10 +858,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "content",
             ],
+            "disabled": undefined,
             "name": "S",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "region",
           },
         ],
@@ -639,7 +887,7 @@ describe('basic', () => {
         "captured": [
           "content",
         ],
-        "pass": true,
+        "pass": false,
         "rendered": "
       - text: content
       ",
@@ -660,66 +908,139 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
                     "children": [
                       {
-                        "children": [
-                          "H",
-                        ],
-                        "name": "",
-                        "role": "columnheader",
-                      },
-                    ],
-                    "name": "",
-                    "role": "row",
-                  },
-                ],
-                "name": "",
-                "role": "rowgroup",
-              },
-              {
-                "children": [
-                  {
-                    "children": [
-                      {
-                        "children": [
-                          "D",
-                        ],
-                        "name": "",
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "name": "H",
+                        "props": {},
+                        "receivesPointerEvents": true,
                         "role": "cell",
                       },
                     ],
-                    "name": "",
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "level": 0,
+                    "name": "H",
+                    "props": {},
+                    "receivesPointerEvents": true,
                     "role": "row",
+                    "selected": false,
                   },
                 ],
+                "disabled": undefined,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "rowgroup",
               },
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
                     "children": [
                       {
-                        "children": [
-                          "F",
-                        ],
-                        "name": "",
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "name": "D",
+                        "props": {},
+                        "receivesPointerEvents": true,
                         "role": "cell",
                       },
                     ],
-                    "name": "",
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "level": 0,
+                    "name": "D",
+                    "props": {},
+                    "receivesPointerEvents": true,
                     "role": "row",
+                    "selected": false,
                   },
                 ],
+                "disabled": undefined,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
+                "role": "rowgroup",
+              },
+              {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
+                "children": [
+                  {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
+                    "children": [
+                      {
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "name": "F",
+                        "props": {},
+                        "receivesPointerEvents": true,
+                        "role": "cell",
+                      },
+                    ],
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "level": 0,
+                    "name": "F",
+                    "props": {},
+                    "receivesPointerEvents": true,
+                    "role": "row",
+                    "selected": false,
+                  },
+                ],
+                "disabled": undefined,
+                "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "rowgroup",
               },
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "table",
           },
         ],
@@ -727,14 +1048,14 @@ describe('basic', () => {
         "rendered": "
       - table:
         - rowgroup:
-          - row:
-            - columnheader: H
+          - row "H":
+            - cell "H"
         - rowgroup:
-          - row:
-            - cell: D
+          - row "D":
+            - cell "D"
         - rowgroup:
-          - row:
-            - cell: F
+          - row "F":
+            - cell "F"
       ",
       }
     `)
@@ -760,89 +1081,166 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "article",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "complementary",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "dialog",
           },
           {
-            "children": [
-              "L",
-            ],
-            "name": "",
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "name": "L",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "group",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "contentinfo",
           },
+          "x",
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
-            "role": "form",
-          },
-          {
-            "children": [
-              "x",
-            ],
-            "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "banner",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "separator",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "main",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "x",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "navigation",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   "x",
                 ],
+                "disabled": undefined,
+                "level": 0,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "listitem",
               },
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "list",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "progressbar",
           },
         ],
@@ -851,9 +1249,9 @@ describe('basic', () => {
       - article: x
       - complementary: x
       - dialog: x
-      - group: L
+      - group "L"
       - contentinfo: x
-      - form: x
+      - text: x
       - banner: x
       - separator
       - main: x
@@ -873,10 +1271,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "content",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "alert",
           },
         ],
@@ -895,8 +1300,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "Click",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
         ],
@@ -921,53 +1335,83 @@ describe('basic', () => {
       {
         "captured": [
           {
-            "children": [
-              "X",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
             "disabled": true,
-            "name": "",
+            "expanded": undefined,
+            "name": "X",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
-            "children": [
-              "X",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "expanded": true,
-            "name": "",
+            "name": "X",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
-            "children": [
-              "X",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "expanded": false,
-            "name": "",
+            "name": "X",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
-            "children": [
-              "X",
-            ],
-            "name": "",
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "X",
             "pressed": true,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
           {
-            "children": [
-              "X",
-            ],
-            "name": "",
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "X",
             "pressed": "mixed",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
         ],
         "pass": true,
         "rendered": "
-      - button [disabled]: X
-      - button [expanded]: X
-      - button [expanded=false]: X
-      - button [pressed]: X
-      - button [pressed=mixed]: X
+      - button "X" [disabled]
+      - button "X" [expanded]
+      - button "X"
+      - button "X" [pressed]
+      - button "X" [pressed=mixed]
       ",
       }
     `)
@@ -981,29 +1425,57 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
                     "children": [
                       {
-                        "children": [
-                          "X",
-                        ],
-                        "name": "",
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "name": "X",
+                        "props": {},
+                        "receivesPointerEvents": true,
                         "role": "cell",
                       },
                     ],
-                    "name": "",
+                    "disabled": undefined,
+                    "expanded": undefined,
+                    "level": 0,
+                    "name": "X",
+                    "props": {},
+                    "receivesPointerEvents": true,
                     "role": "row",
                     "selected": true,
                   },
                 ],
+                "disabled": undefined,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "rowgroup",
               },
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "table",
           },
         ],
@@ -1011,8 +1483,8 @@ describe('basic', () => {
         "rendered": "
       - table:
         - rowgroup:
-          - row [selected]:
-            - cell: X
+          - row "X" [selected]:
+            - cell "X"
       ",
       }
     `)
@@ -1032,62 +1504,92 @@ describe('basic', () => {
       {
         "captured": [
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 1,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 2,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 3,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 4,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 5,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
           {
-            "children": [
-              "x",
-            ],
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
             "level": 6,
-            "name": "",
+            "name": "x",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "heading",
           },
         ],
         "pass": true,
         "rendered": "
-      - heading [level=1]: x
-      - heading [level=2]: x
-      - heading [level=3]: x
-      - heading [level=4]: x
-      - heading [level=5]: x
-      - heading [level=6]: x
+      - heading "x" [level=1]
+      - heading "x" [level=2]
+      - heading "x" [level=3]
+      - heading "x" [level=4]
+      - heading "x" [level=5]
+      - heading "x" [level=6]
       ",
       }
     `)
@@ -1100,10 +1602,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "hello world",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
@@ -1124,20 +1633,37 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "checked": true,
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "checkbox",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "checked": true,
             "children": [],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "radio",
           },
         ],
         "pass": true,
         "rendered": "
-      - checkbox
-      - radio
+      - checkbox [checked]
+      - radio [checked]
       ",
       }
     `)
@@ -1150,10 +1676,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Before",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
@@ -1173,16 +1706,21 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
-            "name": "",
-            "placeholder": "Enter name",
+            "disabled": undefined,
+            "name": "Enter name",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
         "pass": true,
         "rendered": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
       }
     `)
@@ -1196,8 +1734,15 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
             "name": "Name",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "textbox",
           },
         ],
@@ -1209,7 +1754,6 @@ describe('basic', () => {
     `)
   })
 
-  // TODO
   // Playwright: page-aria-snapshot.spec.ts "should not show visible children of hidden elements"
   test('CSS visibility:hidden', () => {
     const result = runPipeline(
@@ -1218,18 +1762,23 @@ describe('basic', () => {
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
-          "Hidden",
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Visible",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
         "pass": true,
         "rendered": "
-      - text: Hidden
       - paragraph: Visible
       ",
       }
@@ -1239,13 +1788,26 @@ describe('basic', () => {
   // TODO
   // Playwright: page-aria-snapshot.spec.ts "should work with slots"
   test('shadow DOM slots', () => {
-    const result = runPipeline('<div id="host"></div>')
+    const result = runPipeline('<main><div id="host"></div></main>')
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
-        "captured": [],
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "main",
+          },
+        ],
         "pass": true,
         "rendered": "
-
+      - main
       ",
       }
     `)
@@ -1259,10 +1821,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "Hello",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -1274,32 +1843,48 @@ describe('basic', () => {
     `)
   })
 
-  // TODO
   // Playwright: page-aria-snapshot.spec.ts "should respect aria-owns"
   test('aria-owns', () => {
-    const result = runPipeline(
-      '<div role="list" aria-owns="item1"></div><div id="item1" role="listitem">Owned</div>'
-    )
+    const result = runPipeline(`
+      <div role="list" aria-owns="item1"></div>
+      <div id="item1" role="listitem">Owned</div>
+    `)
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
           {
-            "children": [],
-            "name": "",
-            "role": "list",
-          },
-          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
-              "Owned",
+              {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
+                "children": [
+                  "Owned",
+                ],
+                "disabled": undefined,
+                "level": 0,
+                "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
+                "role": "listitem",
+              },
             ],
+            "disabled": undefined,
             "name": "",
-            "role": "listitem",
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "list",
           },
         ],
         "pass": true,
         "rendered": "
-      - list
-      - listitem: Owned
+      - list:
+        - listitem: Owned
       ",
       }
     `)
@@ -1318,43 +1903,87 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               {
+                "box": {
+                  "inline": false,
+                  "visible": true,
+                },
                 "children": [
                   {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
                     "children": [
                       {
-                        "children": [
-                          "A",
-                        ],
-                        "name": "",
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "expanded": undefined,
+                        "name": "A",
+                        "props": {
+                          "url": "/a",
+                        },
+                        "receivesPointerEvents": true,
                         "role": "link",
-                        "url": "/a",
                       },
                     ],
+                    "disabled": undefined,
+                    "level": 0,
                     "name": "",
+                    "props": {},
+                    "receivesPointerEvents": true,
                     "role": "listitem",
                   },
                   {
+                    "box": {
+                      "inline": false,
+                      "visible": true,
+                    },
                     "children": [
                       {
-                        "children": [
-                          "B",
-                        ],
-                        "name": "",
+                        "box": {
+                          "inline": false,
+                          "visible": true,
+                        },
+                        "children": [],
+                        "disabled": undefined,
+                        "expanded": undefined,
+                        "name": "B",
+                        "props": {
+                          "url": "/b",
+                        },
+                        "receivesPointerEvents": true,
                         "role": "link",
-                        "url": "/b",
                       },
                     ],
+                    "disabled": undefined,
+                    "level": 0,
                     "name": "",
+                    "props": {},
+                    "receivesPointerEvents": true,
                     "role": "listitem",
                   },
                 ],
+                "disabled": undefined,
                 "name": "",
+                "props": {},
+                "receivesPointerEvents": true,
                 "role": "list",
               },
             ],
+            "disabled": undefined,
             "name": "Main",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "navigation",
           },
         ],
@@ -1363,12 +1992,10 @@ describe('basic', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - link:
-              - text: A
+            - link "A":
               - /url: /a
           - listitem:
-            - link:
-              - text: B
+            - link "B":
               - /url: /b
       ",
       }
@@ -1386,32 +2013,39 @@ describe('basic', () => {
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
+          "User",
           {
-            "children": [
-              "User",
-              {
-                "children": [],
-                "name": "User",
-                "role": "textbox",
-              },
-              {
-                "children": [
-                  "Go",
-                ],
-                "name": "",
-                "role": "button",
-              },
-            ],
-            "name": "",
-            "role": "form",
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "name": "User",
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "textbox",
+          },
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "Go",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
           },
         ],
         "pass": true,
         "rendered": "
-      - form:
-        - text: User
-        - textbox "User"
-        - button: Go
+      - text: User
+      - textbox "User"
+      - button "Go"
       ",
       }
     `)
@@ -1423,8 +2057,17 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "X",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "button",
           },
         ],
@@ -1443,10 +2086,17 @@ describe('basic', () => {
         "captured": [
           "Hello",
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "World",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
@@ -1465,10 +2115,19 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
             "name": "Go",
+            "props": {
+              "url": "/foo",
+            },
+            "receivesPointerEvents": true,
             "role": "link",
-            "url": "/foo",
           },
         ],
         "pass": true,
@@ -1568,16 +2227,11 @@ describe('parseAriaTemplate', () => {
     const t = parseAriaTemplate('- heading /Welcome \\d+/')
     expect(t).toMatchInlineSnapshot(`
       {
-        "children": [
-          {
-            "children": [],
-            "kind": "role",
-            "name": /Welcome \\\\d\\+/,
-            "role": "heading",
-          },
-        ],
         "kind": "role",
-        "role": "fragment",
+        "name": {
+          "pattern": "Welcome \\d+",
+        },
+        "role": "heading",
       }
     `)
   })
@@ -1588,18 +2242,16 @@ describe('parseAriaTemplate', () => {
       {
         "children": [
           {
-            "children": [
-              {
-                "kind": "text",
-                "text": /item \\\\d\\+/,
-              },
-            ],
-            "kind": "role",
-            "role": "paragraph",
+            "kind": "text",
+            "text": {
+              "normalized": "/item \\d+/",
+              "raw": "/item \\d+/",
+            },
           },
         ],
         "kind": "role",
-        "role": "fragment",
+        "name": "",
+        "role": "paragraph",
       }
     `)
   })
@@ -1608,14 +2260,11 @@ describe('parseAriaTemplate', () => {
     const t = parseAriaTemplate('- text: /hello \\d+/')
     expect(t).toMatchInlineSnapshot(`
       {
-        "children": [
-          {
-            "kind": "text",
-            "text": /hello \\\\d\\+/,
-          },
-        ],
-        "kind": "role",
-        "role": "fragment",
+        "kind": "text",
+        "text": {
+          "normalized": "/hello \\d+/",
+          "raw": "/hello \\d+/",
+        },
       }
     `)
   })
@@ -1627,59 +2276,61 @@ describe('parseAriaTemplate', () => {
     `)
     expect(t).toMatchInlineSnapshot(`
       {
-        "children": [
-          {
-            "children": [],
-            "kind": "role",
-            "role": "link",
-            "url": /\\.\\*example\\.com/,
-          },
-        ],
+        "children": [],
         "kind": "role",
-        "role": "fragment",
+        "name": "",
+        "props": {
+          "url": {
+            "normalized": "/.*example.com/",
+            "raw": "/.*example.com/",
+          },
+        },
+        "role": "link",
       }
     `)
   })
 
-  test('empty lines and non-list lines are skipped', () => {
-    const t = parseAriaTemplate(`
+  test('wrong indent', () => {
+    const t = () =>
+      parseAriaTemplate(`
 
       - button
 
       not a list item
       - link
     `)
-    expect(t).toMatchInlineSnapshot(`
-      {
-        "children": [
-          {
-            "children": [],
-            "kind": "role",
-            "role": "button",
-          },
-          {
-            "children": [],
-            "kind": "role",
-            "role": "link",
-          },
-        ],
-        "kind": "role",
-        "role": "fragment",
-      }
+    expect(t).toThrowErrorMatchingInlineSnapshot(`
+      [Error: Unexpected scalar at node end at line 5, column 7:
+
+
+            not a list item
+            - link
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      ]
     `)
+  })
+
+  test('empty input', () => {
+    const t = () => parseAriaTemplate(``)
+    expect(t).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
   })
 
   test('throws on invalid role entry', () => {
     expect(() => parseAriaTemplate('- !@#')).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Cannot parse aria template entry: !@#]`
+      `
+      [Error: Unexpected end of input when expecting role:
+
+
+      ^
+      ]
+    `
     )
   })
 
-  // TODO
   // Playwright: page-aria-snapshot.spec.ts "should support multiline text" (| syntax)
   test('YAML block scalar (| multiline)', () => {
-    // Parser should support YAML block scalar syntax for multiline text.
-    // Currently the | line and continuation lines are silently skipped.
     const t = parseAriaTemplate(`
       - paragraph: |
           Line one
@@ -1689,57 +2340,65 @@ describe('parseAriaTemplate', () => {
       {
         "children": [
           {
-            "children": [
-              {
-                "kind": "text",
-                "text": "|",
-              },
-            ],
-            "kind": "role",
-            "role": "paragraph",
+            "kind": "text",
+            "text": {
+              "normalized": "Line one Line two",
+              "raw": "Line one
+      Line two
+      ",
+            },
           },
         ],
         "kind": "role",
-        "role": "fragment",
+        "name": "",
+        "role": "paragraph",
       }
     `)
   })
 
-  // TODO
   // Playwright: to-match-aria-snapshot.spec.ts "should report error in YAML keys"
   test('parse error with source location', () => {
-    // Parser should report the position of the error in the template string.
-    // Currently throws a generic message without source location.
-    expect(parseAriaTemplate('- button [invalid_attr]')).toMatchInlineSnapshot(`
+    expect(() => parseAriaTemplate('- button [invalid_attr]'))
+      .toThrowErrorMatchingInlineSnapshot(`
+      [Error: Expected ]:
+
+      button [invalid_attr]
+                     ^
+      ]
+    `)
+  })
+
+  // Playwright: to-match-aria-snapshot.spec.ts "should detect unexpected children: equal"
+  test('/children: equal|deep-equal|contain directives', () => {
+    const t = parseAriaTemplate(`
+      - list:
+        - /children: equal
+        - listitem: A
+    `)
+    expect(t).toMatchInlineSnapshot(`
       {
         "children": [
           {
-            "children": [],
+            "children": [
+              {
+                "kind": "text",
+                "text": {
+                  "normalized": "A",
+                  "raw": "A",
+                },
+              },
+            ],
             "kind": "role",
-            "role": "button",
+            "name": "",
+            "role": "listitem",
           },
         ],
+        "containerMode": "equal",
         "kind": "role",
-        "role": "fragment",
+        "name": "",
+        "role": "list",
       }
     `)
-  })
-
-  // TODO
-  // Playwright: to-match-aria-snapshot.spec.ts "should detect unexpected children: equal"
-  test('/children: equal|deep-equal|contain directives', () => {
-    // /children: is a pseudo-child directive (like /url:, /placeholder:).
-    // Currently the parser doesn't recognize it — the line is silently skipped.
-    expect(() => {
-      const t = parseAriaTemplate(`
-        - list:
-          - /children: equal
-          - listitem: A
-      `)
-      expect(t).toMatchInlineSnapshot()
-    }).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Cannot parse aria template entry: /children: equal]`
-    )
   })
 })
 
@@ -1763,36 +2422,30 @@ describe('matchAriaTree', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - link:
-              - text: Home
+            - link "Home":
               - /url: /home
           - listitem:
-            - link:
-              - text: About
+            - link "About":
               - /url: /about
       ",
         "expected": "
       - navigation "Main":
-        - list:
-          - listitem:
-            - link:
-              - text: Home
+        - list "":
+          - listitem "":
+            - link "Home":
               - /url: /home
-          - listitem:
-            - link:
-              - text: About
+          - listitem "":
+            - link "About":
               - /url: /about
       ",
         "mergedExpected": "
       - navigation "Main":
         - list:
           - listitem:
-            - link:
-              - text: Home
+            - link "Home":
               - /url: /home
           - listitem:
-            - link:
-              - text: About
+            - link "About":
               - /url: /about
       ",
         "pass": true,
@@ -1814,30 +2467,30 @@ describe('matchAriaTree', () => {
       {
         "actual": "
       - checkbox "A" [checked]
-      - button [disabled]: B
-      - button [expanded]: C
-      - button [expanded=false]: D
-      - button [pressed]: E
-      - button [pressed=mixed]: F
-      - option [selected]: G
+      - button "B" [disabled]
+      - button "C" [expanded]
+      - button "D"
+      - button "E" [pressed]
+      - button "F" [pressed=mixed]
+      - option "G" [selected]
       ",
         "expected": "
       - checkbox "A" [checked]
-      - button [disabled]: B
-      - button [expanded]: C
-      - button [expanded=false]: D
-      - button [pressed]: E
-      - button [pressed=mixed]: F
-      - option [selected]: G
+      - button "B" [disabled]
+      - button "C" [expanded]
+      - button "D"
+      - button "E" [pressed]
+      - button "F" [pressed=mixed]
+      - option "G" [selected]
       ",
         "mergedExpected": "
       - checkbox "A" [checked]
-      - button [disabled]: B
-      - button [expanded]: C
-      - button [expanded=false]: D
-      - button [pressed]: E
-      - button [pressed=mixed]: F
-      - option [selected]: G
+      - button "B" [disabled]
+      - button "C" [expanded]
+      - button "D"
+      - button "E" [pressed]
+      - button "F" [pressed=mixed]
+      - option "G" [selected]
       ",
         "pass": true,
       }
@@ -1848,15 +2501,15 @@ describe('matchAriaTree', () => {
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
         "actual": "
-      - heading [level=1]: Hello
+      - heading "Hello" [level=1]
       ",
         "expected": "
-      - heading [level=1]
+      - heading "" [level=1]
       ",
         "mergedExpected": "
-      - heading [level=1]
+      - heading "Hello" [level=1]
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -1954,19 +2607,19 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - heading [level=1]: Title
+      - heading "Title" [level=1]
       - paragraph: Body text
-      - button: Submit
+      - button "Submit"
       ",
         "expected": "
-      - heading [level=1]
-      - button
+      - heading "" [level=1]
+      - button ""
       ",
         "mergedExpected": "
-      - heading [level=1]
-      - button
+      - heading "Title" [level=1]
+      - button "Submit"
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -1996,8 +2649,8 @@ describe('matchAriaTree', () => {
         - listitem: Three
       ",
         "expected": "
-      - list:
-        - listitem: One
+      - list "":
+        - listitem "": One
       ",
         "mergedExpected": "
       - list:
@@ -2032,8 +2685,8 @@ describe('matchAriaTree', () => {
         - listitem: Three
       ",
         "expected": "
-      - list:
-        - listitem: Two
+      - list "":
+        - listitem "": Two
       ",
         "mergedExpected": "
       - list:
@@ -2069,9 +2722,9 @@ describe('matchAriaTree', () => {
         - listitem: C
       ",
         "expected": "
-      - list:
-        - listitem: A
-        - listitem: C
+      - list "":
+        - listitem "": A
+        - listitem "": C
       ",
         "mergedExpected": "
       - list:
@@ -2103,7 +2756,7 @@ describe('matchAriaTree', () => {
         - listitem: Two
       ",
         "expected": "
-      - list
+      - list ""
       ",
         "mergedExpected": "
       - list
@@ -2139,25 +2792,29 @@ describe('matchAriaTree', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - button: Home
+            - button "Home"
           - listitem:
-            - button: About
+            - button "About"
           - listitem:
-            - button: Contact
+            - button "Contact"
       ",
         "expected": "
       - navigation "Main":
-        - list:
-          - listitem:
-            - button: Home
+        - list "":
+          - listitem "":
+            - button "": Home
       ",
         "mergedExpected": "
       - navigation "Main":
         - list:
           - listitem:
-            - button: Home
+            - button "Home"
+          - listitem:
+            - button "About"
+          - listitem:
+            - button "Contact"
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2191,10 +2848,10 @@ describe('matchAriaTree', () => {
         - listitem: Y
       ",
         "expected": "
-      - list:
-        - listitem: A
-      - list:
-        - listitem: WRONG
+      - list "":
+        - listitem "": A
+      - list "":
+        - listitem "": WRONG
       ",
         "mergedExpected": "
       - list:
@@ -2234,13 +2891,13 @@ describe('matchAriaTree', () => {
     expect(match('<h2>Title</h2>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
         "actual": "
-      - heading [level=2]: Title
+      - heading "Title" [level=2]
       ",
         "expected": "
-      - heading [level=1]
+      - heading "" [level=1]
       ",
         "mergedExpected": "
-      - heading [level=2]: Title
+      - heading "Title" [level=2]
       ",
         "pass": false,
       }
@@ -2251,13 +2908,13 @@ describe('matchAriaTree', () => {
     expect(match('<button>Click</button>', '- link')).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button: Click
+      - button "Click"
       ",
         "expected": "
-      - link
+      - link ""
       ",
         "mergedExpected": "
-      - button: Click
+      - button "Click"
       ",
         "pass": false,
       }
@@ -2276,7 +2933,7 @@ describe('matchAriaTree', () => {
       - paragraph: /You have \\d+ notifications/
       ",
         "expected": "
-      - paragraph: /You have \\d+ notifications/
+      - paragraph "": /You have \\d+ notifications/
       ",
         "mergedExpected": "
       - paragraph: /You have \\d+ notifications/
@@ -2289,19 +2946,19 @@ describe('matchAriaTree', () => {
   test('regex text child mismatch', () => {
     expect(match('<p>You have 7 notifications</p>', '- paragraph: /\\d+ errors/'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - paragraph: You have 7 notifications
-      ",
-        "expected": "
-      - paragraph: /\\d+ errors/
-      ",
-        "mergedExpected": "
-      - paragraph: You have 7 notifications
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - paragraph: You have 7 notifications
+        ",
+          "expected": "
+        - paragraph "": /\\d+ errors/
+        ",
+          "mergedExpected": "
+        - paragraph: You have 7 notifications
+        ",
+          "pass": false,
+        }
+      `)
   })
 
   test('merge preserves regex name, updates mismatched text', () => {
@@ -2324,7 +2981,7 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button /User \\d+/: Profile
-      - paragraph: You have 7 notifications
+      - paragraph "": You have 7 notifications
       ",
         "mergedExpected": "
       - button /User \\d+/: Profile
@@ -2355,7 +3012,7 @@ describe('matchAriaTree', () => {
       - button "User 99": Profile
       ",
         "expected": "
-      - paragraph: You have 7 notifications
+      - paragraph "": You have 7 notifications
       - button /User \\d+/: Profile
       ",
         "mergedExpected": "
@@ -2382,16 +3039,16 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button: Submit
-      - button: Cancel
+      - button "Submit"
+      - button "Cancel"
       ",
         "expected": "
-      - button: Cancel
-      - paragraph: /w+/
+      - button "": Cancel
+      - paragraph "": /w+/
       ",
         "mergedExpected": "
-      - button: Submit
-      - button: Cancel
+      - button "Submit"
+      - button "Cancel"
       ",
         "pass": false,
       }
@@ -2405,15 +3062,15 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button [disabled]: Click me
+      - button "Click me" [disabled]
       ",
         "expected": "
-      - button [disabled]
+      - button "" [disabled]
       ",
         "mergedExpected": "
-      - button [disabled]
+      - button "Click me" [disabled]
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2421,19 +3078,19 @@ describe('matchAriaTree', () => {
   test('attribute mismatch — disabled expected but not present', () => {
     expect(match('<button>Click me</button>', '- button [disabled]'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button: Click me
-      ",
-        "expected": "
-      - button [disabled]
-      ",
-        "mergedExpected": "
-      - button: Click me
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - button "Click me"
+        ",
+          "expected": "
+        - button "" [disabled]
+        ",
+          "mergedExpected": "
+        - button "Click me"
+        ",
+          "pass": false,
+        }
+      `)
   })
 
   // -- Ported from Playwright: to-match-aria-snapshot.spec.ts "expanded attribute"
@@ -2443,15 +3100,15 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button [expanded]: Toggle
+      - button "Toggle" [expanded]
       ",
         "expected": "
-      - button [expanded]
+      - button "" [expanded]
       ",
         "mergedExpected": "
-      - button [expanded]
+      - button "Toggle" [expanded]
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2465,13 +3122,13 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button [expanded]: Toggle
+      - button "Toggle" [expanded]
       ",
         "expected": "
-      - button [expanded=false]
+      - button "" [expanded=false]
       ",
         "mergedExpected": "
-      - button [expanded]: Toggle
+      - button "Toggle" [expanded]
       ",
         "pass": false,
       }
@@ -2482,19 +3139,19 @@ describe('matchAriaTree', () => {
   test('attribute match — pressed', () => {
     expect(match('<button aria-pressed="true">Like</button>', '- button [pressed]'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button [pressed]: Like
-      ",
-        "expected": "
-      - button [pressed]
-      ",
-        "mergedExpected": "
-      - button [pressed]
-      ",
-        "pass": true,
-      }
-    `)
+        {
+          "actual": "
+        - button "Like" [pressed]
+        ",
+          "expected": "
+        - button "" [pressed]
+        ",
+          "mergedExpected": "
+        - button "Like" [pressed]
+        ",
+          "pass": false,
+        }
+      `)
   })
 
   test('attribute match — pressed=mixed', () => {
@@ -2503,15 +3160,15 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button [pressed=mixed]: Like
+      - button "Like" [pressed=mixed]
       ",
         "expected": "
-      - button [pressed=mixed]
+      - button "" [pressed=mixed]
       ",
         "mergedExpected": "
-      - button [pressed=mixed]
+      - button "Like" [pressed=mixed]
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2519,19 +3176,19 @@ describe('matchAriaTree', () => {
   test('attribute mismatch — pressed=true vs pressed=mixed', () => {
     expect(match('<button aria-pressed="mixed">Like</button>', '- button [pressed]'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button [pressed=mixed]: Like
-      ",
-        "expected": "
-      - button [pressed]
-      ",
-        "mergedExpected": "
-      - button [pressed=mixed]: Like
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - button "Like" [pressed=mixed]
+        ",
+          "expected": "
+        - button "" [pressed]
+        ",
+          "mergedExpected": "
+        - button "Like" [pressed=mixed]
+        ",
+          "pass": false,
+        }
+      `)
   })
 
   // -- Ported from Playwright: to-match-aria-snapshot.spec.ts "selected attribute"
@@ -2544,15 +3201,15 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - option [selected]: Row
+      - option "Row" [selected]
       ",
         "expected": "
-      - option [selected]
+      - option "" [selected]
       ",
         "mergedExpected": "
-      - option [selected]
+      - option "Row" [selected]
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2560,19 +3217,19 @@ describe('matchAriaTree', () => {
   test('attribute mismatch — selected expected but not present', () => {
     expect(match('<div role="option">Row</div>', '- option [selected]'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - option: Row
-      ",
-        "expected": "
-      - option [selected]
-      ",
-        "mergedExpected": "
-      - option: Row
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - option "Row"
+        ",
+          "expected": "
+        - option "" [selected]
+        ",
+          "mergedExpected": "
+        - option "Row"
+        ",
+          "pass": false,
+        }
+      `)
   })
 
   // -- Ported from Playwright: to-match-aria-snapshot.spec.ts "checked attribute"
@@ -2639,17 +3296,16 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - heading [level=1]: title
-      - heading [level=1]: title 2
+      - heading "title" [level=1]
+      - heading "title 2" [level=1]
       ",
         "expected": "
       - heading "title"
       ",
         "mergedExpected": "
-      - heading [level=1]: title
-      - heading [level=1]: title 2
+      - heading "title" [level=1]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -2657,21 +3313,10 @@ describe('matchAriaTree', () => {
   // Behavioral test: empty template produces zero template children,
   // and containsList(anything, []) returns true (vacuous truth).
   // Same semantics as Playwright — "I don't care what's here."
-  test('empty template matches anything', () => {
-    expect(match('<p>anything</p>', '')).toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - paragraph: anything
-      ",
-        "expected": "
-
-      ",
-        "mergedExpected": "
-
-      ",
-        "pass": true,
-      }
-    `)
+  test('empty template', () => {
+    expect(() => match('<p>anything</p>', '')).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
   })
 
   // -- Gap: deeply nested mismatch
@@ -2698,38 +3343,22 @@ describe('matchAriaTree', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - link:
-              - text: Home
+            - link "Home":
               - /url: /a
       ",
         "expected": "
       - navigation "Main":
-        - list:
-          - listitem:
-            - link: Away
+        - list "":
+          - listitem "":
+            - link "": Away
       ",
         "mergedExpected": "
       - navigation "Main":
         - list:
           - listitem:
-            - link:
-              - text: Home
+            - link "Home":
               - /url: /a
       ",
-        "pass": false,
-      }
-    `)
-  })
-
-  // -- Gap: top-level text template node
-  test('top-level text template node', () => {
-    const tree = capture('<p>hello</p>')
-    const textTemplate = { kind: 'text' as const, text: 'hello' } as any
-    expect(matchAriaTree(tree, textTemplate)).toMatchInlineSnapshot(`
-      {
-        "actual": "- paragraph: hello",
-        "expected": "hello",
-        "mergedExpected": "- paragraph: hello",
         "pass": false,
       }
     `)
@@ -2748,19 +3377,18 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Link
+      - link "Link":
         - /url: /.*example.com/
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: /.*example.com/
       ",
         "mergedExpected": "
-      - link:
+      - link "Link":
         - /url: /.*example.com/
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2776,17 +3404,15 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Link
+      - link "Link":
         - /url: https://example.com
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: /.*other.com/
       ",
         "mergedExpected": "
-      - link:
-        - text: Link
+      - link "Link":
         - /url: https://example.com
       ",
         "pass": false,
@@ -2806,18 +3432,16 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
         "expected": "
-      - textbox:
+      - textbox "":
         - /placeholder: Enter name
       ",
         "mergedExpected": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2833,16 +3457,14 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
         "expected": "
-      - textbox:
+      - textbox "":
         - /placeholder: Wrong
       ",
         "mergedExpected": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
         "pass": false,
       }
@@ -2861,19 +3483,20 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
+      - link "Click here":
+        - strong: Click
+        - text: here
         - /url: /.*example.com/
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: /.*example.com/
       ",
         "mergedExpected": "
-      - link:
+      - link "Click here":
         - /url: /.*example.com/
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2889,18 +3512,20 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: /.*other.com/
       ",
         "mergedExpected": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "pass": false,
       }
@@ -2919,21 +3544,23 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
-        - /url: /.*example.com/
+      - link "Click here":
+        - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "expected": "
-      - link:
+      - link "":
         - text: Click here
         - /url: /.*example.com/
       ",
         "mergedExpected": "
-      - link:
-        - text: Click here
-        - /url: /.*example.com/
+      - link "Click here":
+        - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -2950,19 +3577,21 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "expected": "
-      - link:
+      - link "":
         - text: Wrong text
         - /url: /.*example.com/
       ",
         "mergedExpected": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "pass": false,
       }
@@ -2980,19 +3609,20 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
+      - link "Click here":
+        - strong: Click
+        - text: here
         - /url: https://example.com
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: https://example.com
       ",
         "mergedExpected": "
-      - link:
+      - link "Click here":
         - /url: https://example.com
       ",
-        "pass": true,
+        "pass": false,
       }
     `)
   })
@@ -3008,18 +3638,20 @@ describe('matchAriaTree', () => {
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "expected": "
-      - link:
+      - link "":
         - /url: https://other.com
       ",
         "mergedExpected": "
-      - link:
-        - text: Click here
+      - link "Click here":
         - /url: https://example.com
+        - strong: Click
+        - text: here
       ",
         "pass": false,
       }
