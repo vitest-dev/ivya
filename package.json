@@ -34,12 +34,13 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@vitest/browser": "^2.0.5",
-    "playwright": "^1.45.3",
+    "@vitest/browser-playwright": "^4.1.0",
+    "playwright": "^1.58.2",
     "prettier": "^3.3.3",
     "tsup": "^8.2.4",
     "typescript": "^5.8.2",
-    "vitest": "^2.0.5"
+    "vite": "^8.0.0",
+    "vitest": "^4.1.0"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }
