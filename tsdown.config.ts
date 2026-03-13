@@ -1,9 +1,10 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entryPoints: ['src/index.ts', 'src/publicUtils.ts'],
+  entry: ['src/index.ts', 'src/publicUtils.ts'],
   outDir: 'dist',
   format: ['esm'],
+  fixedExtension: false,
   tsconfig: './tsconfig.json',
   target: 'es2018',
   minify: false,

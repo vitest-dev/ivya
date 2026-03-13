@@ -1,45 +1,47 @@
 {
   "name": "ivya",
-  "type": "module",
   "version": "1.7.1",
   "description": "Fork of Playwright's locator resolution",
-  "main": "./dist/index.js",
+  "keywords": [
+    "dom",
+    "locator",
+    "playwright",
+    "query",
+    "search"
+  ],
+  "homepage": "https://github.com/sheremet-va/ivya#readme",
+  "bugs": {
+    "url": "https://github.com/sheremet-va/ivya/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sheremet-va/ivya.git"
   },
-  "bugs": {
-    "url": "https://github.com/sheremet-va/ivya/issues"
-  },
-  "homepage": "https://github.com/sheremet-va/ivya#readme",
   "files": [
     "dist"
   ],
+  "type": "module",
+  "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
-    "dev": "tsup --watch --sourcemap",
-    "build": "tsup",
-    "format": "prettier . --write",
+    "dev": "tsdown --watch --sourcemap",
+    "build": "tsdown",
+    "typecheck": "tsc -b",
+    "format": "oxfmt",
     "test": "vitest"
   },
-  "keywords": [
-    "dom",
-    "search",
-    "query",
-    "playwright",
-    "locator"
-  ],
-  "license": "MIT",
   "devDependencies": {
-    "@vitest/browser": "^2.0.5",
-    "playwright": "^1.45.3",
-    "prettier": "^3.3.3",
-    "tsup": "^8.2.4",
+    "@vitest/browser-playwright": "^4.1.0",
+    "oxfmt": "^0.40.0",
+    "playwright": "^1.58.2",
+    "tsdown": "^0.21.2",
     "typescript": "^5.8.2",
-    "vitest": "^2.0.5"
+    "vite": "^8.0.0",
+    "vitest": "^4.1.0"
   },
-  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }
