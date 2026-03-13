@@ -12,11 +12,7 @@ test('works correctly', () => {
 
   const buttonSelector = getByRoleSelector('button', { name: 'Click me' })
 
-  expect(
-    ivya.queryLocatorSelector(buttonSelector)
-  ).toBe(button)
+  expect(ivya.queryLocatorSelector(buttonSelector)).toBe(button)
 
-  expect(
-    ivya.queryLocatorSelector(`css=body >> ${buttonSelector}`)
-  ).toBe(button)
+  expect(ivya.queryLocatorSelector(`css=body >> ${buttonSelector}`)).toBe(button)
 })
