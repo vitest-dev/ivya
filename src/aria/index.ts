@@ -8,11 +8,7 @@
  */
 
 import { generateAriaTree, renderAriaTree } from './folk/injected/ariaSnapshot'
-import {
-  parseAriaSnapshotUnsafe,
-  matchesNode,
-  containsList,
-} from './folk/isomorphic/ariaSnapshot'
+import { parseAriaSnapshotUnsafe, matchesNode } from './folk/isomorphic/ariaSnapshot'
 import type {
   AriaNode,
   AriaRegex,
@@ -22,34 +18,7 @@ import type {
   AriaTemplateTextNode,
 } from './folk/isomorphic/ariaSnapshot'
 
-// ---------------------------------------------------------------------------
-// Re-exports — folk types and functions as public API
-// ---------------------------------------------------------------------------
-
-export {
-  generateAriaTree as captureAriaTree,
-  renderAriaTree,
-} from './folk/injected/ariaSnapshot'
-export {
-  parseAriaSnapshotUnsafe,
-  matchesNode,
-  containsList,
-  KeyParser,
-  ParserError,
-  textValue,
-} from './folk/isomorphic/ariaSnapshot'
-export type {
-  AriaRole,
-  AriaProps,
-  AriaBox,
-  AriaNode,
-  AriaTemplateNode,
-  AriaTemplateRoleNode,
-  AriaTemplateTextNode,
-  AriaRegex,
-  AriaTextValue,
-  ParsedYamlError,
-} from './folk/isomorphic/ariaSnapshot'
+export { generateAriaTree, renderAriaTree }
 
 // ---------------------------------------------------------------------------
 // parseAriaTemplate — wraps folk's YAML-based parser
