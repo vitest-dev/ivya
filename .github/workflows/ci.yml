@@ -40,5 +40,5 @@ jobs:
       - run: corepack enable
       - run: pnpm i
       - run: pnpm run build
-      - run: pnpm exec playwright install chromium --with-deps
-      - run: pnpm run test
+      - run: pnpm exec playwright install --with-deps
+      - run: pnpm run test -c vitest.ci.config.ts
