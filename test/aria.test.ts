@@ -771,7 +771,7 @@ describe('basic', () => {
       - button "Submit"
       - button "Reset"
       - button "Submit"
-      - slider: 50
+      - slider: "50"
       - searchbox
       - checkbox
       - textbox
@@ -2139,10 +2139,8 @@ describe('basic', () => {
     `)
   })
 
-  // TODO: YAML quoting/escaping not yet implemented (see aria.ts)
   // Playwright: page-aria-snapshot.spec.ts "should escape yaml text in text nodes",
   //   "should escape special yaml characters", "should escape special yaml values"
-  // Current render does NOT quote/escape — these snapshots document the unescaped output.
   test('YAML escaping of special characters', () => {
     const result = runPipeline(`
 <p>one: two</p>
@@ -2157,64 +2155,113 @@ describe('basic', () => {
       {
         "captured": [
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "one: two",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               ""quoted"",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "#comment",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "@at",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "[bracket]",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "true",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
           {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
             "children": [
               "123",
             ],
+            "disabled": undefined,
             "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
             "role": "paragraph",
           },
         ],
         "pass": true,
         "rendered": "
-      - paragraph: one: two
-      - paragraph: "quoted"
-      - paragraph: #comment
-      - paragraph: @at
-      - paragraph: [bracket]
-      - paragraph: true
-      - paragraph: 123
+      - paragraph: "one: two"
+      - paragraph: "\\"quoted\\""
+      - paragraph: "#comment"
+      - paragraph: "@at"
+      - paragraph: "[bracket]"
+      - paragraph: "true"
+      - paragraph: "123"
       ",
       }
     `)
@@ -2845,7 +2892,7 @@ describe('matchAriaTree', () => {
         - listitem: B
       - list:
         - listitem: X
-        - listitem: Y
+        - listitem: "Y"
       ",
         "expected": "
       - list "":
@@ -2858,7 +2905,7 @@ describe('matchAriaTree', () => {
         - listitem: A
       - list:
         - listitem: X
-        - listitem: Y
+        - listitem: "Y"
       ",
         "pass": false,
       }

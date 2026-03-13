@@ -3,6 +3,7 @@ import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   test: {
+    dir: './test',
     browser: {
       enabled: true,
       provider: playwright(),

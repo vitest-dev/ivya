@@ -25,6 +25,7 @@
 //     missing from ivya's fork — needed for ::before/::after pseudo-element text)
 
 import type * as aria from '../isomorphic/ariaSnapshot'
+import { yamlEscapeValueIfNeeded } from '../isomorphic/yaml'
 import { getElementComputedStyle } from '../../../domUtils'
 import * as roleUtils from '../../../roleUtils'
 import { normalizeWhiteSpace } from '../../../stringUtils'
@@ -246,43 +247,6 @@ function normalizeStringChildren(rootA11yNode: aria.AriaNode) {
 }
 
 // ---------------------------------------------------------------------------
-// YAML escaping (ported from Playwright's yaml.ts)
-// ---------------------------------------------------------------------------
-
-function yamlStringNeedsQuotes(str: string): boolean {
-  if (str.length === 0) return true
-  if (/^\s|\s$/.test(str)) return true
-  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/.test(str)) return true
-  if (/^-/.test(str)) return true
-  if (/[\n:](\s|$)/.test(str)) return true
-  if (/\s#/.test(str)) return true
-  if (/[\n\r]/.test(str)) return true
-  if (/^[&*\],?!>|@"'#%]/.test(str)) return true
-  if (/[{}`]/.test(str)) return true
-  if (/^\[/.test(str)) return true
-  if (!isNaN(Number(str)) || ['y', 'n', 'yes', 'no', 'true', 'false', 'on', 'off', 'null'].includes(str.toLowerCase()))
-    return true
-  return false
-}
-
-function yamlEscapeValueIfNeeded(str: string): string {
-  if (!yamlStringNeedsQuotes(str)) return str
-  return '"' + str.replace(/[\\"\x00-\x1f\x7f-\x9f]/g, c => {
-    switch (c) {
-      case '\\': return '\\\\'
-      case '"': return '\\"'
-      case '\b': return '\\b'
-      case '\f': return '\\f'
-      case '\n': return '\\n'
-      case '\r': return '\\r'
-      case '\t': return '\\t'
-      default:
-        return '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0')
-    }
-  }) + '"'
-}
-
-// ---------------------------------------------------------------------------
 // render – AriaNode tree -> YAML-like string
 // ---------------------------------------------------------------------------
 
@@ -317,15 +281,15 @@ export function renderNodeLines(
   if (!node.children.length && !hasProps) {
     lines.push(`${indent}- ${key}`)
   } else if (singleTextChild !== undefined) {
-    lines.push(`${indent}- ${key}: ${singleTextChild}`)
+    lines.push(`${indent}- ${key}: ${yamlEscapeValueIfNeeded(singleTextChild)}`)
   } else {
     lines.push(`${indent}- ${key}:`)
     for (const [name, value] of Object.entries(node.props))
-      lines.push(`${indent}  - /${name}: ${value}`)
+      lines.push(`${indent}  - /${name}: ${yamlEscapeValueIfNeeded(value)}`)
 
     for (const child of node.children) {
       if (typeof child === 'string') {
-        if (child) lines.push(`${indent}  - text: ${child}`)
+        if (child) lines.push(`${indent}  - text: ${yamlEscapeValueIfNeeded(child)}`)
       } else {
         renderNodeLines(child, `${indent}  `, lines)
       }
@@ -339,7 +303,8 @@ export function renderAriaTree(root: aria.AriaNode): string {
 
   for (const nodeToRender of nodesToRender) {
     if (typeof nodeToRender === 'string') {
-      if (nodeToRender) lines.push(`- text: ${nodeToRender}`)
+      if (nodeToRender)
+        lines.push(`- text: ${yamlEscapeValueIfNeeded(nodeToRender)}`)
     } else {
       renderNodeLines(nodeToRender, '', lines)
     }
