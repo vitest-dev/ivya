@@ -34,8 +34,11 @@ function match(html: string, template: string) {
   }
 }
 
-function runPipeline(html: string) {
-  const captured = capture(html)
+function runPipeline(htmlOrElement: string | Element) {
+  const captured =
+    typeof htmlOrElement === 'string'
+      ? capture(htmlOrElement)
+      : captureAriaTree(htmlOrElement)
   const rendered = renderAriaTree(captured)
   const parsed = parseAriaTemplate(rendered)
   const matched = matchAriaTree(captured, parsed)
@@ -1785,10 +1788,15 @@ describe('basic', () => {
     `)
   })
 
-  // TODO
   // Playwright: page-aria-snapshot.spec.ts "should work with slots"
-  test('shadow DOM slots', () => {
-    const result = runPipeline('<main><div id="host"></div></main>')
+  test('shadow DOM: slotted content appears once', () => {
+    // Text "foo" is assigned to the slot, should not be used twice.
+    document.body.innerHTML = '<button><div>foo</div></button>'
+    const div = document.querySelector('div')!
+    const shadow = div.attachShadow({ mode: 'open' })
+    const slot = document.createElement('slot')
+    shadow.appendChild(slot)
+    const result = runPipeline(document.body)
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
@@ -1799,24 +1807,113 @@ describe('basic', () => {
             },
             "children": [],
             "disabled": undefined,
-            "name": "",
+            "expanded": undefined,
+            "name": "foo",
+            "pressed": false,
             "props": {},
             "receivesPointerEvents": true,
-            "role": "main",
+            "role": "button",
           },
         ],
         "pass": true,
         "rendered": "
-      - main
+      - button "foo"
       ",
       }
     `)
   })
 
-  // TODO
+  test('shadow DOM: slotted content replaces slot fallback', () => {
+    // Text "foo" is assigned to the slot, should be used instead of slot content.
+    document.body.innerHTML = '<div>foo</div>'
+    const div = document.querySelector('div')!
+    const shadow = div.attachShadow({ mode: 'open' })
+    const button = document.createElement('button')
+    shadow.appendChild(button)
+    const slot = document.createElement('slot')
+    button.appendChild(slot)
+    const span = document.createElement('span')
+    span.textContent = 'pre'
+    slot.appendChild(span)
+    const result = runPipeline(document.body)
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "foo",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
+          },
+        ],
+        "pass": true,
+        "rendered": "
+      - button "foo"
+      ",
+      }
+    `)
+  })
+
+  test('shadow DOM: slot fallback used when nothing assigned', () => {
+    // Nothing is assigned to the slot, should use slot content.
+    document.body.innerHTML = '<div></div>'
+    const div = document.querySelector('div')!
+    const shadow = div.attachShadow({ mode: 'open' })
+    const button = document.createElement('button')
+    shadow.appendChild(button)
+    const slot = document.createElement('slot')
+    button.appendChild(slot)
+    const span = document.createElement('span')
+    span.textContent = 'pre'
+    slot.appendChild(span)
+    const result = runPipeline(document.body)
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": undefined,
+            "name": "pre",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
+          },
+        ],
+        "pass": true,
+        "rendered": "
+      - button "pre"
+      ",
+      }
+    `)
+  })
+
   // Playwright: page-aria-snapshot.spec.ts "should include pseudo in text"
-  test('CSS pseudo-elements', () => {
-    const result = runPipeline('<p>Hello</p>')
+  test('CSS pseudo-elements included in text', () => {
+    document.body.innerHTML = `
+      <style>
+        span:before { content: 'world'; }
+        div:after { content: 'bye'; }
+      </style>
+      <a href="about:blank">
+        <span>hello</span>
+        <div>hello</div>
+      </a>
+    `
+    const result = runPipeline(document.body)
     expect(result.snapshot).toMatchInlineSnapshot(`
       {
         "captured": [
@@ -1826,18 +1923,23 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [
-              "Hello",
+              "hello hello",
             ],
             "disabled": undefined,
-            "name": "",
-            "props": {},
+            "expanded": undefined,
+            "name": "worldhello hellobye",
+            "props": {
+              "url": "about:blank",
+            },
             "receivesPointerEvents": true,
-            "role": "paragraph",
+            "role": "link",
           },
         ],
         "pass": true,
         "rendered": "
-      - paragraph: Hello
+      - link "worldhello hellobye":
+        - /url: about:blank
+        - text: hello hello
       ",
       }
     `)
