@@ -25,6 +25,7 @@
   "main": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js",
+    "./aria": "./dist/aria/index.js",
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
