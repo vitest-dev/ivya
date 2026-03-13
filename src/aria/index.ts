@@ -18,13 +18,14 @@ import type {
   AriaTemplateTextNode,
 } from './folk/isomorphic/ariaSnapshot'
 
+// re-export
+// dom -> aria tree        (generateAriaTree)
+// aria tree -> yaml text  (renderAriaTree)
+// yaml text -> aria tree  (parseAriaTemplate)
+
 export { generateAriaTree, renderAriaTree }
 
-// ---------------------------------------------------------------------------
-// parseAriaTemplate — wraps folk's YAML-based parser
-// ---------------------------------------------------------------------------
-
-export function parseAriaTemplate(text: string, yamlLib: any): AriaTemplateNode {
+export function parseAriaTemplate(yamlLib: any, text: string): AriaTemplateNode {
   return parseAriaSnapshotUnsafe(yamlLib, text)
 }
 
