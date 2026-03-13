@@ -19,6 +19,15 @@ env:
   PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: corepack enable
+      - run: pnpm i
+      - run: pnpm format --check
+
   test:
     runs-on: ${{ matrix.os }}
 
@@ -32,7 +41,6 @@ jobs:
       - uses: actions/setup-node@v4
       - run: corepack enable
       - run: pnpm i
-      - run: pnpm format --check
-      - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run build
+      - run: pnpm exec playwright install chromium --with-deps
       - run: pnpm run test
