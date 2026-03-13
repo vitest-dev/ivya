@@ -67,7 +67,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 1,
             "name": "Hello",
             "props": {},
@@ -171,7 +170,6 @@ describe('basic', () => {
             "children": [
               "Warning!",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -199,7 +197,6 @@ describe('basic', () => {
             "children": [
               "Visible",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -295,7 +292,6 @@ describe('basic', () => {
                 "children": [
                   "One",
                 ],
-                "disabled": undefined,
                 "level": 0,
                 "name": "",
                 "props": {},
@@ -310,7 +306,6 @@ describe('basic', () => {
                 "children": [
                   "Two",
                 ],
-                "disabled": undefined,
                 "level": 0,
                 "name": "",
                 "props": {},
@@ -318,7 +313,6 @@ describe('basic', () => {
                 "role": "listitem",
               },
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -381,7 +375,6 @@ describe('basic', () => {
             "children": [
               "hello",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -415,7 +408,6 @@ describe('basic', () => {
             "children": [
               "hello world",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -480,7 +472,6 @@ describe('basic', () => {
             "children": [
               "Line 1 Line 2 Line 3",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -509,7 +500,6 @@ describe('basic', () => {
             "children": [
               "Visible",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -540,7 +530,6 @@ describe('basic', () => {
             "children": [
               "Visible",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -602,7 +591,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "name": "Logo",
             "props": {},
             "receivesPointerEvents": true,
@@ -630,7 +618,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -868,7 +855,6 @@ describe('basic', () => {
             "children": [
               "content",
             ],
-            "disabled": undefined,
             "name": "S",
             "props": {},
             "receivesPointerEvents": true,
@@ -934,7 +920,6 @@ describe('basic', () => {
                           "visible": true,
                         },
                         "children": [],
-                        "disabled": undefined,
                         "name": "H",
                         "props": {},
                         "receivesPointerEvents": true,
@@ -951,7 +936,6 @@ describe('basic', () => {
                     "selected": false,
                   },
                 ],
-                "disabled": undefined,
                 "name": "",
                 "props": {},
                 "receivesPointerEvents": true,
@@ -975,7 +959,6 @@ describe('basic', () => {
                           "visible": true,
                         },
                         "children": [],
-                        "disabled": undefined,
                         "name": "D",
                         "props": {},
                         "receivesPointerEvents": true,
@@ -992,7 +975,6 @@ describe('basic', () => {
                     "selected": false,
                   },
                 ],
-                "disabled": undefined,
                 "name": "",
                 "props": {},
                 "receivesPointerEvents": true,
@@ -1016,7 +998,6 @@ describe('basic', () => {
                           "visible": true,
                         },
                         "children": [],
-                        "disabled": undefined,
                         "name": "F",
                         "props": {},
                         "receivesPointerEvents": true,
@@ -1033,14 +1014,12 @@ describe('basic', () => {
                     "selected": false,
                   },
                 ],
-                "disabled": undefined,
                 "name": "",
                 "props": {},
                 "receivesPointerEvents": true,
                 "role": "rowgroup",
               },
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1091,7 +1070,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1105,7 +1083,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1119,7 +1096,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1145,7 +1121,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1160,7 +1135,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1186,7 +1160,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1200,7 +1173,6 @@ describe('basic', () => {
             "children": [
               "x",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1220,7 +1192,6 @@ describe('basic', () => {
                 "children": [
                   "x",
                 ],
-                "disabled": undefined,
                 "level": 0,
                 "name": "",
                 "props": {},
@@ -1228,7 +1199,6 @@ describe('basic', () => {
                 "role": "listitem",
               },
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1240,7 +1210,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1281,7 +1250,6 @@ describe('basic', () => {
             "children": [
               "content",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1420,6 +1388,53 @@ describe('basic', () => {
     `)
   })
 
+  // aria-disabled should only be captured on roles that support it (kAriaDisabledRoles)
+  test('aria-disabled only on supported roles', () => {
+    // button supports disabled, paragraph does not
+    const result = runPipeline(`
+<button aria-disabled="true">A</button>
+<p aria-disabled="true">B</p>
+`)
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": true,
+            "expanded": undefined,
+            "name": "A",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
+          },
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [
+              "B",
+            ],
+            "name": "",
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "paragraph",
+          },
+        ],
+        "pass": true,
+        "rendered": "
+      - button "A" [disabled]
+      - paragraph: B
+      ",
+      }
+    `)
+  })
+
   test('aria-selected captured', () => {
     const result = runPipeline(
       '<table><tr aria-selected="true"><td>X</td></tr></table>'
@@ -1451,7 +1466,6 @@ describe('basic', () => {
                           "visible": true,
                         },
                         "children": [],
-                        "disabled": undefined,
                         "name": "X",
                         "props": {},
                         "receivesPointerEvents": true,
@@ -1468,14 +1482,12 @@ describe('basic', () => {
                     "selected": true,
                   },
                 ],
-                "disabled": undefined,
                 "name": "",
                 "props": {},
                 "receivesPointerEvents": true,
                 "role": "rowgroup",
               },
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1512,7 +1524,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 1,
             "name": "x",
             "props": {},
@@ -1525,7 +1536,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 2,
             "name": "x",
             "props": {},
@@ -1538,7 +1548,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 3,
             "name": "x",
             "props": {},
@@ -1551,7 +1560,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 4,
             "name": "x",
             "props": {},
@@ -1564,7 +1572,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 5,
             "name": "x",
             "props": {},
@@ -1577,7 +1584,6 @@ describe('basic', () => {
               "visible": true,
             },
             "children": [],
-            "disabled": undefined,
             "level": 6,
             "name": "x",
             "props": {},
@@ -1773,7 +1779,6 @@ describe('basic', () => {
             "children": [
               "Visible",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -1965,7 +1970,6 @@ describe('basic', () => {
                 "children": [
                   "Owned",
                 ],
-                "disabled": undefined,
                 "level": 0,
                 "name": "",
                 "props": {},
@@ -1973,7 +1977,6 @@ describe('basic', () => {
                 "role": "listitem",
               },
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2035,7 +2038,6 @@ describe('basic', () => {
                         "role": "link",
                       },
                     ],
-                    "disabled": undefined,
                     "level": 0,
                     "name": "",
                     "props": {},
@@ -2064,7 +2066,6 @@ describe('basic', () => {
                         "role": "link",
                       },
                     ],
-                    "disabled": undefined,
                     "level": 0,
                     "name": "",
                     "props": {},
@@ -2072,14 +2073,12 @@ describe('basic', () => {
                     "role": "listitem",
                   },
                 ],
-                "disabled": undefined,
                 "name": "",
                 "props": {},
                 "receivesPointerEvents": true,
                 "role": "list",
               },
             ],
-            "disabled": undefined,
             "name": "Main",
             "props": {},
             "receivesPointerEvents": true,
@@ -2192,7 +2191,6 @@ describe('basic', () => {
             "children": [
               "World",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2261,7 +2259,6 @@ describe('basic', () => {
             "children": [
               "one: two",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2275,7 +2272,6 @@ describe('basic', () => {
             "children": [
               ""quoted"",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2289,7 +2285,6 @@ describe('basic', () => {
             "children": [
               "#comment",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2303,7 +2298,6 @@ describe('basic', () => {
             "children": [
               "@at",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2317,7 +2311,6 @@ describe('basic', () => {
             "children": [
               "[bracket]",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2331,7 +2324,6 @@ describe('basic', () => {
             "children": [
               "true",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,
@@ -2345,7 +2337,6 @@ describe('basic', () => {
             "children": [
               "123",
             ],
-            "disabled": undefined,
             "name": "",
             "props": {},
             "receivesPointerEvents": true,

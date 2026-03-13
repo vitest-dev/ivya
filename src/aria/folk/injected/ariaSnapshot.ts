@@ -18,9 +18,6 @@
 // Stripped: AI-mode features (refs, cursor, compareSnapshots, filterSnapshotDiff,
 //           convertToBestGuessRegex, textContributesInfo, AriaTreeOptions modes
 //           other than 'expect'). Only 'expect' mode is supported.
-//
-// Required updates to ivya before this compiles:
-//   - roleUtils.ts: export kAriaDisabledRoles (currently not exported)
 
 import type * as aria from '../isomorphic/ariaSnapshot'
 import { yamlEscapeValueIfNeeded } from '../isomorphic/yaml'
@@ -173,9 +170,8 @@ function toAriaNode(element: Element): aria.AriaNode | null {
   if (roleUtils.kAriaCheckedRoles.includes(role))
     result.checked = roleUtils.getAriaChecked(element)
 
-  // kAriaDisabledRoles is not exported from ivya's roleUtils yet.
-  // getAriaDisabled checks the role internally, so calling it unconditionally is safe.
-  result.disabled = roleUtils.getAriaDisabled(element) || undefined
+  if (roleUtils.kAriaDisabledRoles.includes(role))
+    result.disabled = roleUtils.getAriaDisabled(element) || undefined
 
   if (roleUtils.kAriaExpandedRoles.includes(role)) {
     const expanded = roleUtils.getAriaExpanded(element)

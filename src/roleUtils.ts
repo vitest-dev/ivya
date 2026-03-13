@@ -1454,7 +1454,7 @@ export function getAriaLevel(element: Element): number {
   return 0
 }
 
-const kAriaDisabledRoles = [
+export const kAriaDisabledRoles = [
   'application',
   'button',
   'composite',
