@@ -30,6 +30,7 @@
   "scripts": {
     "dev": "tsdown --watch --sourcemap",
     "build": "tsdown",
+    "typecheck": "tsc -b",
     "format": "oxfmt",
     "test": "vitest"
   },

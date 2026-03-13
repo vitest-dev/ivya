@@ -25,6 +25,8 @@ jobs:
       - run: corepack enable
       - run: pnpm i
       - run: pnpm format --check
+      - run: pnpm run build
+      - run: pnpm typecheck
 
   test:
     strategy:
