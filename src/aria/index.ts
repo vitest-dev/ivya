@@ -26,7 +26,10 @@ import type {
 // Re-exports — folk types and functions as public API
 // ---------------------------------------------------------------------------
 
-export { generateAriaTree as captureAriaTree, renderAriaTree } from './folk/injected/ariaSnapshot'
+export {
+  generateAriaTree as captureAriaTree,
+  renderAriaTree,
+} from './folk/injected/ariaSnapshot'
 export {
   parseAriaSnapshotUnsafe,
   matchesNode,
@@ -67,7 +70,10 @@ export interface MatchAriaResult {
   mergedExpected: string
 }
 
-export function matchAriaTree(root: AriaNode, template: AriaTemplateNode): MatchAriaResult {
+export function matchAriaTree(
+  root: AriaNode,
+  template: AriaTemplateNode
+): MatchAriaResult {
   if (template.kind !== 'role') {
     const rendered = renderAriaTree(root)
     return {
@@ -80,8 +86,8 @@ export function matchAriaTree(root: AriaNode, template: AriaTemplateNode): Match
 
   const result = mergeChildLists(
     root.role === 'fragment' ? root.children : [root],
-    template.role === 'fragment' ? (template.children || []) : [template],
-    '',
+    template.role === 'fragment' ? template.children || [] : [template],
+    ''
   )
 
   return {
@@ -122,13 +128,19 @@ function matchesTextValue(actual: string, tv: AriaTextValue): boolean {
 function textValueRegex(tv: AriaTextValue): RegExp | null {
   const { raw } = tv
   if (raw.startsWith('/') && raw.endsWith('/') && raw.length > 1) {
-    try { return new RegExp(raw.slice(1, -1)) }
-    catch { return null }
+    try {
+      return new RegExp(raw.slice(1, -1))
+    } catch {
+      return null
+    }
   }
   return null
 }
 
-function matchesNameValue(actual: string, template: AriaRegex | string | undefined): boolean {
+function matchesNameValue(
+  actual: string,
+  template: AriaRegex | string | undefined
+): boolean {
   if (template === undefined) return true
   if (!actual) return false
   if (typeof template === 'string') return actual === template
@@ -171,7 +183,14 @@ function renderTemplateKey(tmpl: AriaTemplateRoleNode): string {
   return key
 }
 
-function renderAttrSuffix(node: { level?: number, checked?: boolean | 'mixed', disabled?: boolean, expanded?: boolean, pressed?: boolean | 'mixed', selected?: boolean }): string {
+function renderAttrSuffix(node: {
+  level?: number
+  checked?: boolean | 'mixed'
+  disabled?: boolean
+  expanded?: boolean
+  pressed?: boolean | 'mixed'
+  selected?: boolean
+}): string {
   let s = ''
   if (node.level) s += ` [level=${node.level}]`
   if (node.checked === true) s += ' [checked]'
@@ -198,7 +217,11 @@ function renderNodeLines(node: AriaNode, indent: string, lines: string[]): void 
     return
   }
 
-  if (node.children.length === 1 && typeof node.children[0] === 'string' && !hasProps) {
+  if (
+    node.children.length === 1 &&
+    typeof node.children[0] === 'string' &&
+    !hasProps
+  ) {
     lines.push(`${indent}- ${key}: ${node.children[0]}`)
     return
   }
@@ -209,14 +232,17 @@ function renderNodeLines(node: AriaNode, indent: string, lines: string[]): void 
   for (const child of node.children) {
     if (typeof child === 'string') {
       lines.push(`${indent}  - text: ${child}`)
-    }
-    else {
+    } else {
       renderNodeLines(child, `${indent}  `, lines)
     }
   }
 }
 
-function renderTemplateNodeLines(tmpl: AriaTemplateRoleNode, indent: string, lines: string[]): void {
+function renderTemplateNodeLines(
+  tmpl: AriaTemplateRoleNode,
+  indent: string,
+  lines: string[]
+): void {
   const key = renderTemplateKey(tmpl)
   const children = tmpl.children || []
 
@@ -230,7 +256,11 @@ function renderTemplateNodeLines(tmpl: AriaTemplateRoleNode, indent: string, lin
     lines.push(`${indent}- ${key}`)
     return
   }
-  if (children.length === 1 && children[0].kind === 'text' && pseudoLines.length === 0) {
+  if (
+    children.length === 1 &&
+    children[0].kind === 'text' &&
+    pseudoLines.length === 0
+  ) {
     lines.push(`${indent}- ${key}: ${formatTextValue(children[0].text)}`)
     return
   }
@@ -238,8 +268,7 @@ function renderTemplateNodeLines(tmpl: AriaTemplateRoleNode, indent: string, lin
   for (const child of children) {
     if (child.kind === 'text') {
       lines.push(`${indent}  - text: ${formatTextValue(child.text)}`)
-    }
-    else {
+    } else {
       renderTemplateNodeLines(child, `${indent}  `, lines)
     }
   }
@@ -250,7 +279,7 @@ function renderTemplateNodeLines(tmpl: AriaTemplateRoleNode, indent: string, lin
 
 function pairChildren(
   children: (AriaNode | string)[],
-  templates: AriaTemplateNode[],
+  templates: AriaTemplateNode[]
 ): Map<number, number> {
   const pairs = new Map<number, number>()
   let ti = 0
@@ -268,7 +297,7 @@ function pairChildren(
 function mergeChildLists(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[],
-  indent: string,
+  indent: string
 ): MergeLines {
   const actual: string[] = []
   const expected: string[] = []
@@ -281,8 +310,7 @@ function mergeChildLists(
     const lines: string[] = []
     if (typeof child === 'string') {
       lines.push(`${indent}- text: ${child}`)
-    }
-    else {
+    } else {
       renderNodeLines(child, indent, lines)
     }
     return lines
@@ -299,8 +327,7 @@ function mergeChildLists(
         mergeResults.set(ti, r)
         actual.push(...r.actual)
         merged.push(...r.merged)
-      }
-      else {
+      } else {
         const rendered = renderChild(child)
         actual.push(...rendered)
         merged.push(...rendered)
@@ -311,13 +338,11 @@ function mergeChildLists(
       const r = mergeResults.get(ti)
       if (r) {
         expected.push(...r.expected)
-      }
-      else {
+      } else {
         const tmpl = templates[ti]
         if (tmpl.kind === 'text') {
           expected.push(`${indent}- text: ${formatTextValue(tmpl.text)}`)
-        }
-        else {
+        } else {
           const tmplLines: string[] = []
           renderTemplateNodeLines(tmpl, indent, tmplLines)
           expected.push(...tmplLines)
@@ -342,8 +367,7 @@ function mergeChildLists(
       if (!r.pass) {
         allPass = false
       }
-    }
-    else {
+    } else {
       actual.push(...renderChild(child))
     }
   }
@@ -354,7 +378,7 @@ function mergeChildLists(
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
-  indent: string,
+  indent: string
 ): MergeLines {
   // Text node
   if (typeof node === 'string' && template.kind === 'text') {
@@ -362,7 +386,12 @@ function mergeNode(
     if (matched && textValueRegex(template.text)) {
       // Regex matched — show pattern form in all three (cancels in diff)
       const patternStr = `${indent}- text: ${formatTextValue(template.text)}`
-      return { actual: [patternStr], expected: [patternStr], merged: [patternStr], pass: true }
+      return {
+        actual: [patternStr],
+        expected: [patternStr],
+        merged: [patternStr],
+        pass: true,
+      }
     }
     if (matched) {
       const line = `${indent}- text: ${node}`
@@ -377,13 +406,14 @@ function mergeNode(
   }
 
   if (typeof node === 'string' || template.kind !== 'role') {
-    const actualLine = typeof node === 'string'
-      ? `${indent}- text: ${node}`
-      : (() => {
-          const l: string[] = []
-          renderNodeLines(node, indent, l)
-          return l.join('\n')
-        })()
+    const actualLine =
+      typeof node === 'string'
+        ? `${indent}- text: ${node}`
+        : (() => {
+            const l: string[] = []
+            renderNodeLines(node, indent, l)
+            return l.join('\n')
+          })()
     return { actual: [actualLine], expected: [], merged: [actualLine], pass: false }
   }
 
@@ -394,24 +424,23 @@ function mergeNode(
     if (isRegexName(template.name)) {
       if (matchesNameValue(node.name, template.name)) {
         mergedName = template.name
-      }
-      else {
+      } else {
         namePass = false
       }
-    }
-    else {
+    } else {
       if (template.name !== node.name) {
         namePass = false
       }
     }
   }
 
-  const attrPass = (template.level === undefined || template.level === node.level)
-    && (template.checked === undefined || template.checked === node.checked)
-    && (template.disabled === undefined || template.disabled === node.disabled)
-    && (template.expanded === undefined || template.expanded === node.expanded)
-    && (template.pressed === undefined || template.pressed === node.pressed)
-    && (template.selected === undefined || template.selected === node.selected)
+  const attrPass =
+    (template.level === undefined || template.level === node.level) &&
+    (template.checked === undefined || template.checked === node.checked) &&
+    (template.disabled === undefined || template.disabled === node.disabled) &&
+    (template.expanded === undefined || template.expanded === node.expanded) &&
+    (template.pressed === undefined || template.pressed === node.pressed) &&
+    (template.selected === undefined || template.selected === node.selected)
 
   // Check props match
   let propsPass = true
@@ -425,9 +454,10 @@ function mergeNode(
   }
 
   // Build the key line for each output
-  const actualKey = namePass && isRegexName(template.name)
-    ? renderActualKey(node, template.name)
-    : renderActualKey(node)
+  const actualKey =
+    namePass && isRegexName(template.name)
+      ? renderActualKey(node, template.name)
+      : renderActualKey(node)
   const expectedKey = renderTemplateKey(template)
   const mergedKey = renderActualKey(node, mergedName)
 
@@ -435,7 +465,7 @@ function mergeNode(
   const childResult = mergeChildLists(
     node.children,
     template.children || [],
-    `${indent}  `,
+    `${indent}  `
   )
 
   // Build pseudo-child lines for props (/url, /placeholder, etc.)
@@ -453,17 +483,22 @@ function mergeNode(
     const nodeVal = node.props[prop]
     const tmplVal = template.props?.[prop]
     if (nodeVal !== undefined || tmplVal !== undefined) {
-      const matched = tmplVal === undefined || matchesTextValue(nodeVal || '', tmplVal)
+      const matched =
+        tmplVal === undefined || matchesTextValue(nodeVal || '', tmplVal)
 
       if (nodeVal !== undefined) {
-        const actualDisplay = matched && tmplVal && textValueRegex(tmplVal) ? formatTextValue(tmplVal) : nodeVal
+        const actualDisplay =
+          matched && tmplVal && textValueRegex(tmplVal)
+            ? formatTextValue(tmplVal)
+            : nodeVal
         actualPseudo.push(`${indent}  - /${prop}: ${actualDisplay}`)
       }
       if (tmplVal !== undefined) {
         expectedPseudo.push(`${indent}  - /${prop}: ${formatTextValue(tmplVal)}`)
       }
       if (nodeVal !== undefined) {
-        const mergedDisplay = matched && tmplVal !== undefined ? formatTextValue(tmplVal) : nodeVal
+        const mergedDisplay =
+          matched && tmplVal !== undefined ? formatTextValue(tmplVal) : nodeVal
         mergedPseudo.push(`${indent}  - /${prop}: ${mergedDisplay}`)
       }
     }
@@ -476,17 +511,20 @@ function mergeNode(
   const merged: string[] = []
 
   const hasActualChildren = childResult.actual.length > 0 || actualPseudo.length > 0
-  const hasExpectedChildren = childResult.expected.length > 0 || expectedPseudo.length > 0
+  const hasExpectedChildren =
+    childResult.expected.length > 0 || expectedPseudo.length > 0
   const hasMergedChildren = childResult.merged.length > 0 || mergedPseudo.length > 0
 
   if (!hasActualChildren) {
     actual.push(`${indent}- ${actualKey}`)
-  }
-  else if (childResult.actual.length === 1 && !actualPseudo.length && childResult.actual[0].trimStart().startsWith('- text: ')) {
+  } else if (
+    childResult.actual.length === 1 &&
+    !actualPseudo.length &&
+    childResult.actual[0].trimStart().startsWith('- text: ')
+  ) {
     const text = childResult.actual[0].trimStart().slice('- text: '.length)
     actual.push(`${indent}- ${actualKey}: ${text}`)
-  }
-  else {
+  } else {
     actual.push(`${indent}- ${actualKey}:`)
     actual.push(...childResult.actual)
     actual.push(...actualPseudo)
@@ -494,12 +532,14 @@ function mergeNode(
 
   if (!hasExpectedChildren) {
     expected.push(`${indent}- ${expectedKey}`)
-  }
-  else if (childResult.expected.length === 1 && !expectedPseudo.length && childResult.expected[0].trimStart().startsWith('- text: ')) {
+  } else if (
+    childResult.expected.length === 1 &&
+    !expectedPseudo.length &&
+    childResult.expected[0].trimStart().startsWith('- text: ')
+  ) {
     const text = childResult.expected[0].trimStart().slice('- text: '.length)
     expected.push(`${indent}- ${expectedKey}: ${text}`)
-  }
-  else {
+  } else {
     expected.push(`${indent}- ${expectedKey}:`)
     expected.push(...childResult.expected)
     expected.push(...expectedPseudo)
@@ -507,12 +547,14 @@ function mergeNode(
 
   if (!hasMergedChildren) {
     merged.push(`${indent}- ${mergedKey}`)
-  }
-  else if (childResult.merged.length === 1 && !mergedPseudo.length && childResult.merged[0].trimStart().startsWith('- text: ')) {
+  } else if (
+    childResult.merged.length === 1 &&
+    !mergedPseudo.length &&
+    childResult.merged[0].trimStart().startsWith('- text: ')
+  ) {
     const text = childResult.merged[0].trimStart().slice('- text: '.length)
     merged.push(`${indent}- ${mergedKey}: ${text}`)
-  }
-  else {
+  } else {
     merged.push(`${indent}- ${mergedKey}:`)
     merged.push(...childResult.merged)
     merged.push(...mergedPseudo)
