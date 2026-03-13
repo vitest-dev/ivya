@@ -446,7 +446,7 @@ export class JavaScriptLocatorFactory implements LocatorFactory {
       case 'test-id': {
         // special use case in vitest-browser-* packages
         const value = this.toTestIdValue(body)
-        if (value.startsWith('\'__vitest_') && value.endsWith('__\'')) {
+        if (value.startsWith("'__vitest_") && value.endsWith("__'")) {
           return 'page'
         }
         return `getByTestId(${value})`

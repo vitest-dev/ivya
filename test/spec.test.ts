@@ -12,13 +12,9 @@ test('works correctly', () => {
 
   const buttonSelector = getByRoleSelector('button', { name: 'Click me' })
 
-  expect(
-    ivya.queryLocatorSelector(buttonSelector)
-  ).toBe(button)
+  expect(ivya.queryLocatorSelector(buttonSelector)).toBe(button)
 
-  expect(
-    ivya.queryLocatorSelector(`css=body >> ${buttonSelector}`)
-  ).toBe(button)
+  expect(ivya.queryLocatorSelector(`css=body >> ${buttonSelector}`)).toBe(button)
 })
 
 test('file input', () => {
@@ -51,6 +47,8 @@ test('vitest components with specific test id', () => {
   const ivya = Ivya.create({
     browser: 'chromium',
   })
-  expect(ivya.generateSelectorSimple(div)).toBe('internal:testid=[data-testid="__vitest_1__"s]')
+  expect(ivya.generateSelectorSimple(div)).toBe(
+    'internal:testid=[data-testid="__vitest_1__"s]'
+  )
   expect(asLocator('javascript', ivya.generateSelectorSimple(div))).toBe('page')
 })

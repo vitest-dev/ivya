@@ -40,7 +40,16 @@ import type { ElementText, TextMatcher } from './selectorUtils'
 import { elementMatchesText, elementText, getElementLabels } from './selectorUtils'
 import type { CSSComplexSelectorList } from './cssParser'
 import { isElementVisible } from './domUtils'
-import { ByRoleOptions, getByAltTextSelector, getByLabelSelector, getByPlaceholderSelector, getByRoleSelector, getByTestIdSelector, getByTextSelector, getByTitleSelector } from './locatorUtils'
+import {
+  ByRoleOptions,
+  getByAltTextSelector,
+  getByLabelSelector,
+  getByPlaceholderSelector,
+  getByRoleSelector,
+  getByTestIdSelector,
+  getByTextSelector,
+  getByTitleSelector,
+} from './locatorUtils'
 
 export interface IvyaOptions {
   testIdAttribute: string
@@ -149,28 +158,24 @@ export class Ivya {
   queryAllByRole(
     text: string,
     options?: ByRoleOptions,
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByRoleSelector(text, options)
-    )
+    const selector = this.parseSelector(getByRoleSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryAllByLabelText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByLabelSelector(text, options)
-    )
+    const selector = this.parseSelector(getByLabelSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryAllByTestId(
     text: string | RegExp,
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
     const selector = this.parseSelector(
       getByTestIdSelector(Ivya.options.testIdAttribute, text)
@@ -181,73 +186,58 @@ export class Ivya {
   queryAllByText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByTextSelector(text, options)
-    )
+    const selector = this.parseSelector(getByTextSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryAllByTitle(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByTitleSelector(text, options)
-    )
+    const selector = this.parseSelector(getByTitleSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryAllByPlaceholder(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByPlaceholderSelector(text, options)
-    )
+    const selector = this.parseSelector(getByPlaceholderSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryAllByAltText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByAltTextSelector(text, options)
-    )
+    const selector = this.parseSelector(getByAltTextSelector(text, options))
     return this.querySelectorAll(selector, container)
   }
 
   queryByRole(
     text: string,
     options?: ByRoleOptions,
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByRoleSelector(text, options)
-    )
+    const selector = this.parseSelector(getByRoleSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
   queryByLabelText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByLabelSelector(text, options)
-    )
+    const selector = this.parseSelector(getByLabelSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
-  queryByTestId(
-    text: string | RegExp,
-    container: Node = document.documentElement,
-  ) {
+  queryByTestId(text: string | RegExp, container: Node = document.documentElement) {
     const selector = this.parseSelector(
       getByTestIdSelector(Ivya.options.testIdAttribute, text)
     )
@@ -257,44 +247,36 @@ export class Ivya {
   queryByText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByTextSelector(text, options)
-    )
+    const selector = this.parseSelector(getByTextSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
   queryByTitle(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByTitleSelector(text, options)
-    )
+    const selector = this.parseSelector(getByTitleSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
   queryByPlaceholder(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByPlaceholderSelector(text, options)
-    )
+    const selector = this.parseSelector(getByPlaceholderSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
   queryByAltText(
     text: string | RegExp,
     options?: { exact?: boolean },
-    container: Node = document.documentElement,
+    container: Node = document.documentElement
   ) {
-    const selector = this.parseSelector(
-      getByAltTextSelector(text, options)
-    )
+    const selector = this.parseSelector(getByAltTextSelector(text, options))
     return this.querySelector(selector, container, false)
   }
 
