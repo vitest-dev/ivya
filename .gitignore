@@ -3,3 +3,4 @@ dist
 *.tsbuildinfo
 __screenshots__
 .vitest-attachments
+vendor/
