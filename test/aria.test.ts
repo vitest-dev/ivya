@@ -1922,9 +1922,7 @@ describe('basic', () => {
               "inline": false,
               "visible": true,
             },
-            "children": [
-              "hello hello",
-            ],
+            "children": [],
             "disabled": undefined,
             "expanded": undefined,
             "name": "worldhello hellobye",
@@ -1939,7 +1937,6 @@ describe('basic', () => {
         "rendered": "
       - link "worldhello hellobye":
         - /url: about:blank
-        - text: hello hello
       ",
       }
     `)

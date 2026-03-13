@@ -21,8 +21,6 @@
 //
 // Required updates to ivya before this compiles:
 //   - roleUtils.ts: export kAriaDisabledRoles (currently not exported)
-//   - roleUtils.ts: add getCSSContent() (present in Playwright v1.58.2 but
-//     missing from ivya's fork — needed for ::before/::after pseudo-element text)
 
 import type * as aria from '../isomorphic/ariaSnapshot'
 import { yamlEscapeValueIfNeeded } from '../isomorphic/yaml'
@@ -100,8 +98,7 @@ export function generateAriaTree(rootElement: Element): aria.AriaNode {
     const treatAsBlock = display !== 'inline' || element.nodeName === 'BR' ? ' ' : ''
     if (treatAsBlock) ariaNode.children.push(treatAsBlock)
 
-    // TODO: uncomment when getCSSContent is added to ivya's roleUtils
-    // ariaNode.children.push(roleUtils.getCSSContent(element, '::before') || '')
+    ariaNode.children.push(roleUtils.getPseudoContent(element, '::before'))
     const assignedNodes =
       element.nodeName === 'SLOT' ? (element as HTMLSlotElement).assignedNodes() : []
     if (assignedNodes.length) {
@@ -123,8 +120,7 @@ export function generateAriaTree(rootElement: Element): aria.AriaNode {
 
     for (const child of ariaChildren) visit(ariaNode, child, parentElementVisible)
 
-    // TODO: uncomment when getCSSContent is added to ivya's roleUtils
-    // ariaNode.children.push(roleUtils.getCSSContent(element, '::after') || '')
+    ariaNode.children.push(roleUtils.getPseudoContent(element, '::after'))
 
     if (treatAsBlock) ariaNode.children.push(treatAsBlock)
 
