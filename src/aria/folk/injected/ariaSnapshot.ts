@@ -249,61 +249,63 @@ function normalizeStringChildren(rootA11yNode: aria.AriaNode) {
 // render – AriaNode tree -> YAML-like string
 // ---------------------------------------------------------------------------
 
-export function renderAriaTree(root: aria.AriaNode): string {
-  const lines: string[] = []
-
-  const nodesToRender = root.role === 'fragment' ? root.children : [root]
-
-  const visitText = (text: string, indent: string) => {
-    if (text) lines.push(`${indent}- text: ${text}`)
+export function createAriaKey(ariaNode: aria.AriaNode): string {
+  let key = ariaNode.role as string
+  if (ariaNode.name && ariaNode.name.length <= 900) {
+    key += ` ${JSON.stringify(ariaNode.name)}`
   }
+  if (ariaNode.checked === 'mixed') key += ' [checked=mixed]'
+  if (ariaNode.checked === true) key += ' [checked]'
+  if (ariaNode.disabled) key += ' [disabled]'
+  if (ariaNode.expanded) key += ' [expanded]'
+  if (ariaNode.level) key += ` [level=${ariaNode.level}]`
+  if (ariaNode.pressed === 'mixed') key += ' [pressed=mixed]'
+  if (ariaNode.pressed === true) key += ' [pressed]'
+  if (ariaNode.selected === true) key += ' [selected]'
+  return key
+}
 
-  const createKey = (ariaNode: aria.AriaNode): string => {
-    let key = ariaNode.role
-    if (ariaNode.name && ariaNode.name.length <= 900) {
-      const stringifiedName = JSON.stringify(ariaNode.name)
-      key += ` ${stringifiedName}`
-    }
-    if (ariaNode.checked === 'mixed') key += ' [checked=mixed]'
-    if (ariaNode.checked === true) key += ' [checked]'
-    if (ariaNode.disabled) key += ' [disabled]'
-    if (ariaNode.expanded) key += ' [expanded]'
-    if (ariaNode.level) key += ` [level=${ariaNode.level}]`
-    if (ariaNode.pressed === 'mixed') key += ' [pressed=mixed]'
-    if (ariaNode.pressed === true) key += ' [pressed]'
-    if (ariaNode.selected === true) key += ' [selected]'
-    return key
-  }
+export function renderNodeLines(
+  node: aria.AriaNode,
+  indent: string,
+  lines: string[]
+): void {
+  const key = createAriaKey(node)
+  const hasProps = Object.keys(node.props).length > 0
+  const singleTextChild =
+    node.children.length === 1 && typeof node.children[0] === 'string' && !hasProps
+      ? node.children[0]
+      : undefined
 
-  const visit = (ariaNode: aria.AriaNode, indent: string) => {
-    const escapedKey = `${indent}- ${createKey(ariaNode)}`
-    const singleTextChild =
-      ariaNode.children.length === 1 &&
-      typeof ariaNode.children[0] === 'string' &&
-      !Object.keys(ariaNode.props).length
-        ? ariaNode.children[0]
-        : undefined
+  if (!node.children.length && !hasProps) {
+    lines.push(`${indent}- ${key}`)
+  } else if (singleTextChild !== undefined) {
+    lines.push(`${indent}- ${key}: ${singleTextChild}`)
+  } else {
+    lines.push(`${indent}- ${key}:`)
+    for (const [name, value] of Object.entries(node.props))
+      lines.push(`${indent}  - /${name}: ${value}`)
 
-    if (!ariaNode.children.length && !Object.keys(ariaNode.props).length) {
-      lines.push(escapedKey)
-    } else if (singleTextChild !== undefined) {
-      lines.push(`${escapedKey}: ${singleTextChild}`)
-    } else {
-      lines.push(`${escapedKey}:`)
-      for (const [name, value] of Object.entries(ariaNode.props))
-        lines.push(`${indent}  - /${name}: ${value}`)
-
-      const childIndent = `${indent}  `
-      for (const child of ariaNode.children) {
-        if (typeof child === 'string') visitText(child, childIndent)
-        else visit(child, childIndent)
+    for (const child of node.children) {
+      if (typeof child === 'string') {
+        if (child) lines.push(`${indent}  - text: ${child}`)
+      } else {
+        renderNodeLines(child, `${indent}  `, lines)
       }
     }
   }
+}
+
+export function renderAriaTree(root: aria.AriaNode): string {
+  const lines: string[] = []
+  const nodesToRender = root.role === 'fragment' ? root.children : [root]
 
   for (const nodeToRender of nodesToRender) {
-    if (typeof nodeToRender === 'string') visitText(nodeToRender, '')
-    else visit(nodeToRender, '')
+    if (typeof nodeToRender === 'string') {
+      if (nodeToRender) lines.push(`- text: ${nodeToRender}`)
+    } else {
+      renderNodeLines(nodeToRender, '', lines)
+    }
   }
   return lines.join('\n')
 }

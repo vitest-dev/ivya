@@ -7,8 +7,19 @@
  * All types are Playwright's types from folk/isomorphic — no conversion layer.
  */
 
-import { generateAriaTree, renderAriaTree } from './folk/injected/ariaSnapshot'
-import { parseAriaSnapshotUnsafe, matchesNode } from './folk/isomorphic/ariaSnapshot'
+import {
+  generateAriaTree,
+  renderAriaTree,
+  renderNodeLines,
+  createAriaKey,
+} from './folk/injected/ariaSnapshot'
+import {
+  parseAriaSnapshotUnsafe,
+  matchesNode,
+  matchesTextValue,
+  matchesStringOrRegex,
+  cachedRegex,
+} from './folk/isomorphic/ariaSnapshot'
 import type {
   AriaNode,
   AriaRegex,
@@ -18,10 +29,10 @@ import type {
   AriaTemplateTextNode,
 } from './folk/isomorphic/ariaSnapshot'
 
-// re-export
-// dom -> aria tree        (generateAriaTree)
-// aria tree -> yaml text  (renderAriaTree)
-// yaml text -> aria tree  (parseAriaTemplate)
+// Simple re-export for
+//   dom -> aria tree        (generateAriaTree)
+//   aria tree -> yaml text  (renderAriaTree)
+//   yaml text -> aria tree  (parseAriaTemplate)
 
 export { generateAriaTree, renderAriaTree }
 
@@ -31,6 +42,10 @@ export function parseAriaTemplate(yamlLib: any, text: string): AriaTemplateNode 
 
 // ---------------------------------------------------------------------------
 // matchAriaTree — three-way merge matching (vitest-specific)
+//
+// Uses folk's matchesNode for boolean matching and folk's renderNodeLines
+// for actual-side rendering. Only the merge assembly and template rendering
+// (which Playwright doesn't need) are implemented here.
 // ---------------------------------------------------------------------------
 
 export interface MatchAriaResult {
@@ -69,11 +84,7 @@ export function matchAriaTree(
 }
 
 // ---------------------------------------------------------------------------
-// Three-way merge internals
-//
-// All helpers below operate on Playwright's AriaNode / AriaTemplateNode types.
-// They use folk's matchesNode for boolean matching and produce three parallel
-// line arrays (actual, expected, merged) for diff + partial snapshot update.
+// Merge internals
 // ---------------------------------------------------------------------------
 
 interface MergeLines {
@@ -83,49 +94,10 @@ interface MergeLines {
   pass: boolean
 }
 
-// --- Text/name matching helpers ---
-
-function matchesTextValue(actual: string, tv: AriaTextValue): boolean {
-  if (!tv.normalized) return true
-  if (!actual) return false
-  if (actual === tv.normalized) return true
-  if (actual === tv.raw) return true
-  const regex = textValueRegex(tv)
-  if (regex) return regex.test(actual)
-  return false
-}
-
-function textValueRegex(tv: AriaTextValue): RegExp | null {
-  const { raw } = tv
-  if (raw.startsWith('/') && raw.endsWith('/') && raw.length > 1) {
-    try {
-      return new RegExp(raw.slice(1, -1))
-    } catch {
-      return null
-    }
-  }
-  return null
-}
-
-function matchesNameValue(
-  actual: string,
-  template: AriaRegex | string | undefined
-): boolean {
-  if (template === undefined) return true
-  if (!actual) return false
-  if (typeof template === 'string') return actual === template
-  return !!actual.match(new RegExp(template.pattern))
-}
-
-function isRegexName(name: AriaRegex | string | undefined): name is AriaRegex {
-  return typeof name === 'object' && name !== null && 'pattern' in name
-}
-
-// --- Rendering helpers ---
+// --- Format helpers (merge-specific, no folk equivalent) ---
 
 function formatTextValue(tv: AriaTextValue): string {
-  const regex = textValueRegex(tv)
-  if (regex) return `/${tv.raw.slice(1, -1)}/`
+  if (cachedRegex(tv)) return `/${tv.raw.slice(1, -1)}/`
   return tv.normalized
 }
 
@@ -134,78 +106,25 @@ function formatNameValue(name: AriaRegex | string): string {
   return `/${name.pattern}/`
 }
 
-function renderActualKey(node: AriaNode, nameOverride?: AriaRegex | string): string {
-  let key = node.role as string
-  const name = nameOverride !== undefined ? nameOverride : node.name
-  if (name) {
-    key += ` ${typeof name === 'string' ? JSON.stringify(name) : formatNameValue(name)}`
-  }
-  key += renderAttrSuffix(node)
-  return key
+function isRegexName(name: AriaRegex | string | undefined): name is AriaRegex {
+  return typeof name === 'object' && name !== null && 'pattern' in name
 }
+
+// --- Template rendering (Playwright doesn't render templates back to text) ---
 
 function renderTemplateKey(tmpl: AriaTemplateRoleNode): string {
   let key = tmpl.role as string
-  if (tmpl.name !== undefined) {
-    key += ` ${formatNameValue(tmpl.name)}`
-  }
-  key += renderTemplateAttrSuffix(tmpl)
+  if (tmpl.name !== undefined) key += ` ${formatNameValue(tmpl.name)}`
+  if (tmpl.level) key += ` [level=${tmpl.level}]`
+  if (tmpl.checked === true) key += ' [checked]'
+  if (tmpl.checked === 'mixed') key += ' [checked=mixed]'
+  if (tmpl.disabled) key += ' [disabled]'
+  if (tmpl.expanded === true) key += ' [expanded]'
+  if (tmpl.expanded === false) key += ' [expanded=false]'
+  if (tmpl.pressed === true) key += ' [pressed]'
+  if (tmpl.pressed === 'mixed') key += ' [pressed=mixed]'
+  if (tmpl.selected) key += ' [selected]'
   return key
-}
-
-function renderAttrSuffix(node: {
-  level?: number
-  checked?: boolean | 'mixed'
-  disabled?: boolean
-  expanded?: boolean
-  pressed?: boolean | 'mixed'
-  selected?: boolean
-}): string {
-  let s = ''
-  if (node.level) s += ` [level=${node.level}]`
-  if (node.checked === true) s += ' [checked]'
-  if (node.checked === 'mixed') s += ' [checked=mixed]'
-  if (node.disabled) s += ' [disabled]'
-  if (node.expanded === true) s += ' [expanded]'
-  if (node.expanded === false) s += ' [expanded=false]'
-  if (node.pressed === true) s += ' [pressed]'
-  if (node.pressed === 'mixed') s += ' [pressed=mixed]'
-  if (node.selected) s += ' [selected]'
-  return s
-}
-
-function renderTemplateAttrSuffix(tmpl: AriaTemplateRoleNode): string {
-  return renderAttrSuffix(tmpl)
-}
-
-function renderNodeLines(node: AriaNode, indent: string, lines: string[]): void {
-  const key = renderActualKey(node)
-  const hasProps = Object.keys(node.props).length > 0
-
-  if (!node.children.length && !hasProps) {
-    lines.push(`${indent}- ${key}`)
-    return
-  }
-
-  if (
-    node.children.length === 1 &&
-    typeof node.children[0] === 'string' &&
-    !hasProps
-  ) {
-    lines.push(`${indent}- ${key}: ${node.children[0]}`)
-    return
-  }
-
-  lines.push(`${indent}- ${key}:`)
-  for (const [name, value] of Object.entries(node.props))
-    lines.push(`${indent}  - /${name}: ${value}`)
-  for (const child of node.children) {
-    if (typeof child === 'string') {
-      lines.push(`${indent}  - text: ${child}`)
-    } else {
-      renderNodeLines(child, `${indent}  `, lines)
-    }
-  }
 }
 
 function renderTemplateNodeLines(
@@ -245,7 +164,27 @@ function renderTemplateNodeLines(
   lines.push(...pseudoLines)
 }
 
-// --- Pairing ---
+// --- Actual-side key with name override (for regex-transparent diffing) ---
+
+function renderActualKeyWithName(
+  node: AriaNode,
+  nameOverride: AriaRegex | string
+): string {
+  let key = node.role as string
+  if (nameOverride) key += ` ${formatNameValue(nameOverride)}`
+  if (node.level) key += ` [level=${node.level}]`
+  if (node.checked === true) key += ' [checked]'
+  if (node.checked === 'mixed') key += ' [checked=mixed]'
+  if (node.disabled) key += ' [disabled]'
+  if (node.expanded === true) key += ' [expanded]'
+  if (node.expanded === false) key += ' [expanded=false]'
+  if (node.pressed === true) key += ' [pressed]'
+  if (node.pressed === 'mixed') key += ' [pressed=mixed]'
+  if (node.selected) key += ' [selected]'
+  return key
+}
+
+// --- Pairing + merge ---
 
 function pairChildren(
   children: (AriaNode | string)[],
@@ -262,7 +201,15 @@ function pairChildren(
   return pairs
 }
 
-// --- Merge ---
+function renderChildLines(child: AriaNode | string, indent: string): string[] {
+  const lines: string[] = []
+  if (typeof child === 'string') {
+    lines.push(`${indent}- text: ${child}`)
+  } else {
+    renderNodeLines(child, indent, lines)
+  }
+  return lines
+}
 
 function mergeChildLists(
   children: (AriaNode | string)[],
@@ -276,29 +223,18 @@ function mergeChildLists(
   const pairs = pairChildren(children, templates)
   const allTemplatesMatched = pairs.size === templates.length
 
-  function renderChild(child: AriaNode | string): string[] {
-    const lines: string[] = []
-    if (typeof child === 'string') {
-      lines.push(`${indent}- text: ${child}`)
-    } else {
-      renderNodeLines(child, indent, lines)
-    }
-    return lines
-  }
-
   if (!allTemplatesMatched) {
     // BAIL OUT: some template had no match — render full actual (maximally strict).
     const mergeResults = new Map<number, MergeLines>()
     for (let ci = 0; ci < children.length; ci++) {
-      const child = children[ci]
       const ti = pairs.get(ci)
       if (ti !== undefined) {
-        const r = mergeNode(child, templates[ti], indent)
+        const r = mergeNode(children[ci], templates[ti], indent)
         mergeResults.set(ti, r)
         actual.push(...r.actual)
         merged.push(...r.merged)
       } else {
-        const rendered = renderChild(child)
+        const rendered = renderChildLines(children[ci], indent)
         actual.push(...rendered)
         merged.push(...rendered)
       }
@@ -326,19 +262,15 @@ function mergeChildLists(
   // PARTIAL MERGE: all templates matched — preserve partial structure.
   let allPass = true
   for (let ci = 0; ci < children.length; ci++) {
-    const child = children[ci]
     const ti = pairs.get(ci)
-
     if (ti !== undefined) {
-      const r = mergeNode(child, templates[ti], indent)
+      const r = mergeNode(children[ci], templates[ti], indent)
       actual.push(...r.actual)
       expected.push(...r.expected)
       merged.push(...r.merged)
-      if (!r.pass) {
-        allPass = false
-      }
+      if (!r.pass) allPass = false
     } else {
-      actual.push(...renderChild(child))
+      actual.push(...renderChildLines(children[ci], indent))
     }
   }
 
@@ -353,8 +285,7 @@ function mergeNode(
   // Text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
-    if (matched && textValueRegex(template.text)) {
-      // Regex matched — show pattern form in all three (cancels in diff)
+    if (matched && cachedRegex(template.text)) {
       const patternStr = `${indent}- text: ${formatTextValue(template.text)}`
       return {
         actual: [patternStr],
@@ -392,15 +323,13 @@ function mergeNode(
   let mergedName: AriaRegex | string = node.name
   if (template.name !== undefined) {
     if (isRegexName(template.name)) {
-      if (matchesNameValue(node.name, template.name)) {
+      if (matchesStringOrRegex(node.name, template.name)) {
         mergedName = template.name
       } else {
         namePass = false
       }
-    } else {
-      if (template.name !== node.name) {
-        namePass = false
-      }
+    } else if (template.name !== node.name) {
+      namePass = false
     }
   }
 
@@ -412,7 +341,6 @@ function mergeNode(
     (template.pressed === undefined || template.pressed === node.pressed) &&
     (template.selected === undefined || template.selected === node.selected)
 
-  // Check props match
   let propsPass = true
   if (template.props) {
     for (const [key, tv] of Object.entries(template.props)) {
@@ -423,13 +351,16 @@ function mergeNode(
     }
   }
 
-  // Build the key line for each output
+  // Build key lines — use createAriaKey for plain actual, renderActualKeyWithName for overrides
   const actualKey =
     namePass && isRegexName(template.name)
-      ? renderActualKey(node, template.name)
-      : renderActualKey(node)
+      ? renderActualKeyWithName(node, template.name)
+      : createAriaKey(node)
   const expectedKey = renderTemplateKey(template)
-  const mergedKey = renderActualKey(node, mergedName)
+  const mergedKey =
+    mergedName === node.name
+      ? createAriaKey(node)
+      : renderActualKeyWithName(node, mergedName)
 
   // Recurse into children
   const childResult = mergeChildLists(
@@ -438,12 +369,11 @@ function mergeNode(
     `${indent}  `
   )
 
-  // Build pseudo-child lines for props (/url, /placeholder, etc.)
+  // Build pseudo-child lines for props
   const actualPseudo: string[] = []
   const expectedPseudo: string[] = []
   const mergedPseudo: string[] = []
 
-  // Collect all prop keys from both node and template
   const allPropKeys = new Set([
     ...Object.keys(node.props),
     ...Object.keys(template.props || {}),
@@ -458,7 +388,7 @@ function mergeNode(
 
       if (nodeVal !== undefined) {
         const actualDisplay =
-          matched && tmplVal && textValueRegex(tmplVal)
+          matched && tmplVal && cachedRegex(tmplVal)
             ? formatTextValue(tmplVal)
             : nodeVal
         actualPseudo.push(`${indent}  - /${prop}: ${actualDisplay}`)

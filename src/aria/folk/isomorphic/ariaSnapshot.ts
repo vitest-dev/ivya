@@ -686,7 +686,7 @@ export class ParserError extends Error {
 // match – AriaNode tree vs AriaTemplateNode tree
 // ---------------------------------------------------------------------------
 
-function matchesStringOrRegex(
+export function matchesStringOrRegex(
   text: string,
   template: AriaRegex | string | undefined
 ): boolean {
@@ -696,7 +696,7 @@ function matchesStringOrRegex(
   return !!text.match(new RegExp(template.pattern))
 }
 
-function matchesTextValue(text: string, template: AriaTextValue | undefined) {
+export function matchesTextValue(text: string, template: AriaTextValue | undefined) {
   if (!template?.normalized) return true
   if (!text) return false
   if (text === template.normalized) return true
@@ -710,7 +710,7 @@ function matchesTextValue(text: string, template: AriaTextValue | undefined) {
 
 const cachedRegexSymbol = Symbol('cachedRegex')
 
-function cachedRegex(template: AriaTextValue): RegExp | null {
+export function cachedRegex(template: AriaTextValue): RegExp | null {
   if ((template as any)[cachedRegexSymbol] !== undefined)
     return (template as any)[cachedRegexSymbol]
 
