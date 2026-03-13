@@ -9,3 +9,11 @@ git clone --depth 1 https://github.com/microsoft/playwright.git vendor/playwrigh
 The `vendor/` directory is gitignored. For example, you can search for:
 - `packages/playwright-core/src/server/injected/ariaSnapshot.ts` — ARIA snapshot logic
 - `packages/playwright-core/src/server/injected/roleUtils.ts` — role/ARIA utilities
+
+## Tests
+
+- Iterate on aria snapshot utility feature
+
+```sh
+pnpm test test/aria.test.ts --browser.headless --update
+```
