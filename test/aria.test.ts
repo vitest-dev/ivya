@@ -3558,11 +3558,38 @@ describe('matchAriaTree', () => {
   })
 
   // -- Ported from Playwright: page-aria-snapshot.spec.ts "should snapshot placeholder"
-  test('/placeholder: pseudo-attribute matches', () => {
+  test('/placeholder: matches when input has separate aria-label', () => {
+    expect(
+      match(
+        '<input placeholder="Enter name" aria-label="Label">',
+        `
+- textbox "Label":
+  - /placeholder: Enter name`
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - textbox "Label":
+        - /placeholder: Enter name
+      ",
+        "expected": "
+      - textbox "Label":
+        - /placeholder: Enter name
+      ",
+        "mergedExpected": "
+      - textbox "Label":
+        - /placeholder: Enter name
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('/placeholder: not captured when placeholder is the accessible name', () => {
     expect(
       match(
         '<input placeholder="Enter name">',
-        `\
+        `
 - textbox:
   - /placeholder: Enter name`
       )
@@ -3583,7 +3610,7 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  test('/placeholder: pseudo-attribute mismatch', () => {
+  test('/placeholder: value mismatch', () => {
     expect(
       match(
         '<input placeholder="Enter name">',
