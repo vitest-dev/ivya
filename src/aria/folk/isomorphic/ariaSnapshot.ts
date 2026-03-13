@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Forked from https://github.com/microsoft/playwright/blob/v1.58.2/packages/playwright-core/src/utils/isomorphic/ariaSnapshot.ts
+// Forked from vendor/playwright/packages/playwright-core/src/utils/isomorphic/ariaSnapshot.ts
 // Stripped: findNewNode (not needed for toMatchAriaSnapshot)
 
 // https://www.w3.org/TR/wai-aria-1.2/#role_definitions

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Forked from https://github.com/microsoft/playwright/blob/v1.58.2/packages/injected/src/ariaSnapshot.ts
+// Forked from vendor/playwright/packages/injected/src/ariaSnapshot.ts
 // Stripped: AI-mode features (refs, cursor, compareSnapshots, filterSnapshotDiff,
 //           convertToBestGuessRegex, textContributesInfo, AriaTreeOptions modes
 //           other than 'expect'). Only 'expect' mode is supported.

@@ -1,9 +1,9 @@
 /**
  * Tests for the ARIA snapshot pipeline.
  *
- * Based on Playwright v1.58.2 tests:
- *   https://github.com/microsoft/playwright/blob/v1.58.2/tests/page/to-match-aria-snapshot.spec.ts
- *   https://github.com/microsoft/playwright/blob/v1.58.2/tests/page/page-aria-snapshot.spec.ts
+ * Based on Playwright tests:
+ *   vendor/playwright/tests/page/to-match-aria-snapshot.spec.ts
+ *   vendor/playwright/tests/page/page-aria-snapshot.spec.ts
  */
 
 import {
