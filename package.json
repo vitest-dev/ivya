@@ -28,8 +28,8 @@
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
-    "dev": "tsup --watch --sourcemap",
-    "build": "tsup",
+    "dev": "tsdown --watch --sourcemap",
+    "build": "tsdown",
     "format": "oxfmt",
     "test": "vitest"
   },
@@ -37,7 +37,7 @@
     "@vitest/browser-playwright": "^4.1.0",
     "oxfmt": "^0.40.0",
     "playwright": "^1.58.2",
-    "tsup": "^8.2.4",
+    "tsdown": "^0.21.2",
     "typescript": "^5.8.2",
     "vite": "^8.0.0",
     "vitest": "^4.1.0"
