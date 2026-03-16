@@ -54,10 +54,12 @@ import {
 export interface IvyaOptions {
   testIdAttribute: string
   browser: 'webkit' | 'chromium' | 'firefox'
+  exact: boolean
 }
 
 export interface IvyaConfiguration {
   testIdAttribute?: string
+  exact?: boolean
   browser: 'webkit' | 'chromium' | 'firefox'
 }
 
@@ -70,6 +72,7 @@ export class Ivya {
   static options: IvyaOptions = {
     testIdAttribute: 'data-testid',
     browser: 'chromium',
+    exact: false
   }
 
   private static singleton: Ivya | null = null
