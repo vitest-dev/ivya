@@ -2,6 +2,7 @@ import {
   renderAriaTree,
   renderNodeLines,
   createAriaKey,
+  renderAriaProps,
 } from './folk/injected/ariaSnapshot'
 import {
   matchesNode,
@@ -62,6 +63,28 @@ import type {
 //   the actual DOM with regex heuristics (renderStringsAsRegex /
 //   convertToBestGuessRegex) and overwrites the snapshot wholesale.
 //   Our merge preserves user-edited patterns from the expected side.
+//
+// Two-pass pairing in mergeChildLists:
+//   Currently, pairChildren uses full-depth matchesNode. When some
+//   templates go unmatched, the bail-out renders the full actual tree
+//   as mergedExpected — discarding user-edited patterns (e.g. regexes)
+//   from matched siblings.
+//
+//   Example: template has [paragraph "wrong text", button /User \d+/].
+//   The button matches but paragraph doesn't → bail out → mergedExpected
+//   loses the /User \d+/ regex pattern and outputs a literal snapshot.
+//
+//   Fix: two-pass approach.
+//   Pass 1 (exact): full-depth matchesNode, as today. Determines pass.
+//   Pass 2 (shallow): for unpaired leftovers, match by role + name only.
+//     These shallow pairs feed into mergeNode which produces a targeted
+//     diff instead of a raw actual dump. pass is already false — the
+//     shallow pass only improves the merge output for --update.
+//     Shallow matching is heuristic (can mispair nodes with same role +
+//     name but different children), but that's acceptable since we're
+//     already in the failing branch — a slightly wrong diff is still
+//     better than discarding all user patterns. Cost is O(C) string
+//     comparisons, negligible next to the full-depth pass 1.
 // ---------------------------------------------------------------------------
 
 export interface MatchAriaResult {
@@ -117,15 +140,7 @@ function isRegexName(name?: AriaRegex | string): name is AriaRegex {
 function renderTemplateKey(tmpl: AriaTemplateRoleNode): string {
   let key = tmpl.role
   if (tmpl.name !== undefined) key += ` ${formatNameValue(tmpl.name)}`
-  if (tmpl.level) key += ` [level=${tmpl.level}]`
-  if (tmpl.checked === true) key += ' [checked]'
-  if (tmpl.checked === 'mixed') key += ' [checked=mixed]'
-  if (tmpl.disabled) key += ' [disabled]'
-  if (tmpl.expanded === true) key += ' [expanded]'
-  if (tmpl.expanded === false) key += ' [expanded=false]'
-  if (tmpl.pressed === true) key += ' [pressed]'
-  if (tmpl.pressed === 'mixed') key += ' [pressed=mixed]'
-  if (tmpl.selected) key += ' [selected]'
+  key += renderAriaProps(tmpl, { renderExpandedFalse: true })
   return key
 }
 
@@ -174,15 +189,7 @@ function renderActualKeyWithName(
 ): string {
   let key = node.role
   if (nameOverride) key += ` ${formatNameValue(nameOverride)}`
-  if (node.level) key += ` [level=${node.level}]`
-  if (node.checked === true) key += ' [checked]'
-  if (node.checked === 'mixed') key += ' [checked=mixed]'
-  if (node.disabled) key += ' [disabled]'
-  if (node.expanded === true) key += ' [expanded]'
-  if (node.expanded === false) key += ' [expanded=false]'
-  if (node.pressed === true) key += ' [pressed]'
-  if (node.pressed === 'mixed') key += ' [pressed=mixed]'
-  if (node.selected) key += ' [selected]'
+  key += renderAriaProps(node)
   return key
 }
 

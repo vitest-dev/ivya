@@ -242,19 +242,40 @@ function normalizeStringChildren(rootA11yNode: aria.AriaNode) {
 // render – AriaNode tree -> YAML-like string
 // ---------------------------------------------------------------------------
 
+// Renders AriaProps as attribute annotations (e.g. " [checked] [level=2]").
+//
+// expanded=false is omitted by default, following Playwright's convention:
+// ARIA expanded has three states: undefined (not expandable), false (collapsed),
+// true (expanded). Rendering omits false because most nodes are collapsed and
+// annotating every one is noisy. Matching still distinguishes false from
+// undefined — so rendering is intentionally lossy. This means a render→parse
+// round-trip cannot assert expanded=false. Pass renderExpandedFalse to override
+// (e.g. when rendering a user-authored template that explicitly specifies it).
+export function renderAriaProps(
+  props: aria.AriaProps,
+  options?: { renderExpandedFalse?: boolean }
+): string {
+  let s = ''
+  if (props.level) s += ` [level=${props.level}]`
+  if (props.checked === true) s += ' [checked]'
+  if (props.checked === 'mixed') s += ' [checked=mixed]'
+  if (props.disabled) s += ' [disabled]'
+  if (props.expanded === true) s += ' [expanded]'
+  if (props.expanded === false && options?.renderExpandedFalse) {
+    s += ' [expanded=false]'
+  }
+  if (props.pressed === true) s += ' [pressed]'
+  if (props.pressed === 'mixed') s += ' [pressed=mixed]'
+  if (props.selected) s += ' [selected]'
+  return s
+}
+
 export function createAriaKey(ariaNode: aria.AriaNode): string {
-  let key = ariaNode.role as string
+  let key = ariaNode.role
   if (ariaNode.name && ariaNode.name.length <= 900) {
     key += ` ${JSON.stringify(ariaNode.name)}`
   }
-  if (ariaNode.checked === 'mixed') key += ' [checked=mixed]'
-  if (ariaNode.checked === true) key += ' [checked]'
-  if (ariaNode.disabled) key += ' [disabled]'
-  if (ariaNode.expanded) key += ' [expanded]'
-  if (ariaNode.level) key += ` [level=${ariaNode.level}]`
-  if (ariaNode.pressed === 'mixed') key += ' [pressed=mixed]'
-  if (ariaNode.pressed === true) key += ' [pressed]'
-  if (ariaNode.selected === true) key += ' [selected]'
+  key += renderAriaProps(ariaNode)
   return key
 }
 
