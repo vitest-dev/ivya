@@ -17,6 +17,7 @@
 // copied without changes from https://github.com/microsoft/playwright/blob/4554372e456154d7365b6902ef9f3e1e7de76e94/packages/playwright-core/src/utils/isomorphic/locatorUtils.ts
 
 import { escapeForAttributeSelector, escapeForTextSelector } from './stringUtils'
+import { Ivya } from './ivya'
 
 export interface ByRoleOptions {
   checked?: boolean
@@ -35,7 +36,7 @@ function getByAttributeTextSelector(
   text: string | RegExp,
   options?: { exact?: boolean }
 ): string {
-  return `internal:attr=[${attrName}=${escapeForAttributeSelector(text, options?.exact || false)}]`
+  return `internal:attr=[${attrName}=${escapeForAttributeSelector(text, options?.exact ?? Ivya.options.exact)}]`
 }
 
 export function getByTestIdSelector(
@@ -49,7 +50,7 @@ export function getByLabelSelector(
   text: string | RegExp,
   options?: { exact?: boolean }
 ): string {
-  return `internal:label=${escapeForTextSelector(text, !!options?.exact)}`
+  return `internal:label=${escapeForTextSelector(text, options?.exact ?? Ivya.options.exact)}`
 }
 
 export function getByAltTextSelector(
@@ -77,7 +78,7 @@ export function getByTextSelector(
   text: string | RegExp,
   options?: { exact?: boolean }
 ): string {
-  return `internal:text=${escapeForTextSelector(text, !!options?.exact)}`
+  return `internal:text=${escapeForTextSelector(text, options?.exact ?? Ivya.options.exact)}`
 }
 
 export function getByRoleSelector(
@@ -104,7 +105,10 @@ export function getByRoleSelector(
     props.push(['level', String(options.level)])
   }
   if (options.name !== undefined) {
-    props.push(['name', escapeForAttributeSelector(options.name, !!options.exact)])
+    props.push([
+      'name',
+      escapeForAttributeSelector(options.name, options.exact ?? Ivya.options.exact),
+    ])
   }
   if (options.pressed !== undefined) {
     props.push(['pressed', String(options.pressed)])
