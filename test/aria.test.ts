@@ -3828,3 +3828,98 @@ describe('matchAriaTree', () => {
     `)
   })
 })
+
+describe('aria-expanded', () => {
+  // expanded has three ARIA states: undefined (not expandable), false (collapsed),
+  // true (expanded). Rendering omits false for brevity, but matching distinguishes
+  // all three. These tests verify the asymmetry is handled correctly in merge.
+
+  test('basic', () => {
+    const result = runPipeline(`
+      <button aria-expanded="false">b</button>
+      <button aria-expanded="true">c</button>
+    `)
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": false,
+            "name": "b",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
+          },
+          {
+            "box": {
+              "inline": false,
+              "visible": true,
+            },
+            "children": [],
+            "disabled": undefined,
+            "expanded": true,
+            "name": "c",
+            "pressed": false,
+            "props": {},
+            "receivesPointerEvents": true,
+            "role": "button",
+          },
+        ],
+        "pass": true,
+        "rendered": "
+      - button "b"
+      - button "c" [expanded]
+      ",
+      }
+    `)
+  })
+
+  // TODO: mergedExpected should preserve [expanded=false] from the template
+  // when pass is true. Currently lost because mergedKey goes through
+  // createAriaKey/renderAriaProps which omits expanded=false.
+  test('expanded=false is preserved in merge when template asserts it', () => {
+    expect(
+      match(
+        '<button aria-expanded="false">Menu</button>',
+        '- button "Menu" [expanded=false]'
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - button "Menu"
+      ",
+        "expected": "
+      - button "Menu" [expanded=false]
+      ",
+        "mergedExpected": "
+      - button "Menu"
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('expanded=false vs expanded=undefined is a mismatch', () => {
+    expect(match('<button>Menu</button>', '- button "Menu" [expanded=false]'))
+      .toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - button "Menu"
+      ",
+        "expected": "
+      - button "Menu" [expanded=false]
+      ",
+        "mergedExpected": "
+      - button "Menu"
+      ",
+        "pass": false,
+      }
+    `)
+  })
+})
