@@ -34,7 +34,10 @@ function match(html: string, template: string) {
   }
 }
 
-function runPipeline(htmlOrElement: string | Element) {
+function runPipeline(
+  htmlOrElement: string | Element,
+  options?: { expectPass?: boolean }
+) {
   const captured =
     typeof htmlOrElement === 'string'
       ? capture(htmlOrElement)
@@ -42,6 +45,9 @@ function runPipeline(htmlOrElement: string | Element) {
   const rendered = renderAriaTree(captured)
   const parsed = parseAriaTemplate(rendered)
   const matched = matchAriaTree(captured, parsed)
+  if (options?.expectPass !== false) {
+    expect(matched.pass).toBe(true)
+  }
   return {
     captured,
     rendered,
