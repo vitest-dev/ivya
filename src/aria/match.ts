@@ -91,14 +91,14 @@ function formatNameValue(name: AriaRegex | string): string {
   return `/${name.pattern}/`
 }
 
-function isRegexName(name: AriaRegex | string | undefined): name is AriaRegex {
+function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
 }
 
 // --- Template rendering (Playwright doesn't render templates back to text) ---
 
 function renderTemplateKey(tmpl: AriaTemplateRoleNode): string {
-  let key = tmpl.role as string
+  let key = tmpl.role
   if (tmpl.name !== undefined) key += ` ${formatNameValue(tmpl.name)}`
   if (tmpl.level) key += ` [level=${tmpl.level}]`
   if (tmpl.checked === true) key += ' [checked]'
@@ -155,7 +155,7 @@ function renderActualKeyWithName(
   node: AriaNode,
   nameOverride: AriaRegex | string
 ): string {
-  let key = node.role as string
+  let key = node.role
   if (nameOverride) key += ` ${formatNameValue(nameOverride)}`
   if (node.level) key += ` [level=${node.level}]`
   if (node.checked === true) key += ' [checked]'
