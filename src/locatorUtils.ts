@@ -105,7 +105,10 @@ export function getByRoleSelector(
     props.push(['level', String(options.level)])
   }
   if (options.name !== undefined) {
-    props.push(['name', escapeForAttributeSelector(options.name, options.exact ?? Ivya.options.exact)])
+    props.push([
+      'name',
+      escapeForAttributeSelector(options.name, options.exact ?? Ivya.options.exact),
+    ])
   }
   if (options.pressed !== undefined) {
     props.push(['pressed', String(options.pressed)])

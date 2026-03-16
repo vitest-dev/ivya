@@ -1,4 +1,13 @@
-import { getByAltTextSelector, getByLabelSelector, getByPlaceholderSelector, getByRoleSelector, getByTextSelector, getByTitleSelector, Ivya, asLocator } from '../src'
+import {
+  getByAltTextSelector,
+  getByLabelSelector,
+  getByPlaceholderSelector,
+  getByRoleSelector,
+  getByTextSelector,
+  getByTitleSelector,
+  Ivya,
+  asLocator,
+} from '../src'
 import { expect, test } from 'vitest'
 
 test('works correctly', () => {
@@ -44,18 +53,32 @@ test('global exact option affects all selector helpers', () => {
 
   expect(getByTextSelector('Hello')).toBe('internal:text="Hello"s')
   expect(getByLabelSelector('Hello')).toBe('internal:label="Hello"s')
-  expect(getByPlaceholderSelector('Hello')).toBe('internal:attr=[placeholder="Hello"s]')
+  expect(getByPlaceholderSelector('Hello')).toBe(
+    'internal:attr=[placeholder="Hello"s]'
+  )
   expect(getByAltTextSelector('Hello')).toBe('internal:attr=[alt="Hello"s]')
   expect(getByTitleSelector('Hello')).toBe('internal:attr=[title="Hello"s]')
-  expect(getByRoleSelector('button', { name: 'Hello' })).toBe('internal:role=button[name="Hello"s]')
+  expect(getByRoleSelector('button', { name: 'Hello' })).toBe(
+    'internal:role=button[name="Hello"s]'
+  )
 
   // per-call exact: false overrides the global option
   expect(getByTextSelector('Hello', { exact: false })).toBe('internal:text="Hello"i')
-  expect(getByLabelSelector('Hello', { exact: false })).toBe('internal:label="Hello"i')
-  expect(getByPlaceholderSelector('Hello', { exact: false })).toBe('internal:attr=[placeholder="Hello"i]')
-  expect(getByAltTextSelector('Hello', { exact: false })).toBe('internal:attr=[alt="Hello"i]')
-  expect(getByTitleSelector('Hello', { exact: false })).toBe('internal:attr=[title="Hello"i]')
-  expect(getByRoleSelector('button', { name: 'Hello', exact: false })).toBe('internal:role=button[name="Hello"i]')
+  expect(getByLabelSelector('Hello', { exact: false })).toBe(
+    'internal:label="Hello"i'
+  )
+  expect(getByPlaceholderSelector('Hello', { exact: false })).toBe(
+    'internal:attr=[placeholder="Hello"i]'
+  )
+  expect(getByAltTextSelector('Hello', { exact: false })).toBe(
+    'internal:attr=[alt="Hello"i]'
+  )
+  expect(getByTitleSelector('Hello', { exact: false })).toBe(
+    'internal:attr=[title="Hello"i]'
+  )
+  expect(getByRoleSelector('button', { name: 'Hello', exact: false })).toBe(
+    'internal:role=button[name="Hello"i]'
+  )
 
   Ivya.options.exact = false
 })

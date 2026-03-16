@@ -72,7 +72,7 @@ export class Ivya {
   static options: IvyaOptions = {
     testIdAttribute: 'data-testid',
     browser: 'chromium',
-    exact: false
+    exact: false,
   }
 
   private static singleton: Ivya | null = null
