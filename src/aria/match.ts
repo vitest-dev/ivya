@@ -47,44 +47,34 @@ import type {
 //   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
 //   (matchesNode, matchesNodeDeep)
 //
-// Complexity:
-//   Both our pairChildren and Playwright's containsList use greedy
-//   left-to-right sequential pairing. Each pair attempt calls matchesNode
-//   which recurses to full subtree depth — so pairing at one level is
-//   O(C) calls each costing O(subtree). Across the whole tree: O(N × T)
-//   where N = total actual nodes, T = total template nodes.
-//
-//   Structural difference: Playwright adds matchesNodeDeep, which walks
-//   the entire actual tree trying matchesNode at every node (locator-style
-//   "find this pattern anywhere"). We always match from root, so we don't
-//   have that extra traversal layer.
-//
-//   Playwright also has no three-way merge — on --update it re-renders
-//   the actual DOM with regex heuristics (renderStringsAsRegex /
-//   convertToBestGuessRegex) and overwrites the snapshot wholesale.
-//   Our merge preserves user-edited patterns from the expected side.
+// Differences from Playwright:
+//   - Playwright adds matchesNodeDeep, which walks the entire actual tree
+//     trying matchesNode at every node (locator-style "find this pattern
+//     anywhere"). We always match from root.
+//   - Playwright has no three-way merge — on --update it re-renders the
+//     actual DOM with regex heuristics (renderStringsAsRegex /
+//     convertToBestGuessRegex) and overwrites the snapshot wholesale.
+//     Our merge preserves user-edited patterns from the expected side.
 //
 // Two-pass pairing in mergeChildLists:
-//   Currently, pairChildren uses full-depth matchesNode. When some
-//   templates go unmatched, the bail-out renders the full actual tree
-//   as mergedExpected — discarding user-edited patterns (e.g. regexes)
-//   from matched siblings.
+//   Pass 1: O(C) greedy left-to-right, full-depth matchesNode.
+//     Determines pass (all templates matched = pass). This is the same
+//     algorithm as Playwright's containsList.
+//   Pass 2: O(C × T) unordered, full-depth matchesNode (only on failure).
+//     Recovers exact pairs that pass 1's greedy scan missed — e.g.
+//     template [paragraph "wrong", button /\d+/] vs children [paragraph,
+//     button]: pass 1 fails paragraph and advances past it, then can't
+//     match button against the paragraph template. Pass 2 scans all
+//     children per template and finds the button match, preserving the
+//     regex in the merge output instead of dumping a full literal snapshot.
+//     pass is already false — pass 2 only improves merge quality.
 //
-//   Example: template has [paragraph "wrong text", button /User \d+/].
-//   The button matches but paragraph doesn't → bail out → mergedExpected
-//   loses the /User \d+/ regex pattern and outputs a literal snapshot.
-//
-//   Fix: two-pass approach.
-//   Pass 1 (exact): full-depth matchesNode, as today. Determines pass.
-//   Pass 2 (shallow): for unpaired leftovers, match by role + name only.
-//     These shallow pairs feed into mergeNode which produces a targeted
-//     diff instead of a raw actual dump. pass is already false — the
-//     shallow pass only improves the merge output for --update.
-//     Shallow matching is heuristic (can mispair nodes with same role +
-//     name but different children), but that's acceptable since we're
-//     already in the failing branch — a slightly wrong diff is still
-//     better than discarding all user patterns. Cost is O(C) string
-//     comparisons, negligible next to the full-depth pass 1.
+//   Complexity: matchesNode recurses with O(C × T) internally (via
+//   containsList) at each tree level, so the total work across the tree
+//   is already O(N × T) where N = total actual nodes, T = total template
+//   nodes. Pass 2 adds a factor of T at the failing level only (O(C × T)
+//   calls instead of O(C)), each recursing O(subtree). This only triggers
+//   on failure and sibling lists are small in practice.
 // ---------------------------------------------------------------------------
 
 export interface MatchAriaResult {
@@ -199,12 +189,38 @@ function pairChildren(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[]
 ): Map<number, number> {
+  // Greedy left-to-right: advance through children, when child[ci]
+  // full-depth matches template[ti], pair them and advance ti.
+  // Unmatched children are skipped (contain semantics).
   const pairs = new Map<number, number>()
   let ti = 0
   for (let ci = 0; ci < children.length && ti < templates.length; ci++) {
     if (matchesNode(children[ci], templates[ti], false)) {
       pairs.set(ci, ti)
       ti++
+    }
+  }
+  return pairs
+}
+
+/** Pass 2: O(C × T) unordered exact match to recover pairs that pass 1's
+ * greedy left-to-right scan missed (e.g. due to ordering differences).
+ * Only affects merge output quality, not pass/fail. */
+function pairChildrenFull(
+  children: (AriaNode | string)[],
+  templates: AriaTemplateNode[]
+): Map<number, number> {
+  const pairs = new Map<number, number>()
+  const pairedChildren = new Set<number>()
+  // For each template, scan all children for a full-depth match.
+  for (let ti = 0; ti < templates.length; ti++) {
+    for (let ci = 0; ci < children.length; ci++) {
+      if (pairedChildren.has(ci)) continue
+      if (matchesNode(children[ci], templates[ti], false)) {
+        pairs.set(ci, ti)
+        pairedChildren.add(ci)
+        break
+      }
     }
   }
   return pairs
@@ -241,10 +257,14 @@ function mergeChildLists(
   const allTemplatesMatched = pairs.size === templates.length
 
   if (!allTemplatesMatched) {
-    // BAIL OUT: some template had no match — render full actual (maximally strict).
+    // Pass 2: O(C × T) unordered exact match to recover pairs that
+    // pass 1's greedy scan missed. Preserves user patterns (e.g. regexes)
+    // in the merge output instead of dumping full actual.
+    const allPairs = pairChildrenFull(children, templates)
+
     const mergeResults = new Map<number, MergeLines>()
     for (let ci = 0; ci < children.length; ci++) {
-      const ti = pairs.get(ci)
+      const ti = allPairs.get(ci)
       if (ti !== undefined) {
         const r = mergeNode(children[ci], templates[ti], indent)
         mergeResults.set(ti, r)

@@ -3135,8 +3135,7 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  // TODO: this cause full update. how to preserve second regex?
-  test('literal mismatch first and regex match second', () => {
+  test('mismatch text and regex match', () => {
     expect(
       match(
         `
@@ -3152,7 +3151,7 @@ describe('matchAriaTree', () => {
       {
         "actual": "
       - paragraph: Changed
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       ",
         "expected": "
       - paragraph "": Original
@@ -3160,14 +3159,45 @@ describe('matchAriaTree', () => {
       ",
         "mergedExpected": "
       - paragraph: Changed
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       ",
         "pass": false,
       }
     `)
   })
 
-  test('merge ok', () => {
+  test('mismatch tag and regex match', () => {
+    expect(
+      match(
+        `
+      <h1>ChangedWithTag</h1>
+      <button aria-label="1234">Pattern</button>
+    `,
+        `
+      - paragraph: Original
+      - button /\\d+/: Pattern
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - heading "ChangedWithTag" [level=1]
+      - button /\\d+/: Pattern
+      ",
+        "expected": "
+      - paragraph "": Original
+      - button /\\d+/: Pattern
+      ",
+        "mergedExpected": "
+      - heading "ChangedWithTag" [level=1]
+      - button /\\d+/: Pattern
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('merge 1', () => {
     expect(
       match(
         `
@@ -3201,8 +3231,7 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  // TODO:
-  test('merge todo 1', () => {
+  test('merge 2', () => {
     expect(
       match(
         `
@@ -3220,7 +3249,7 @@ describe('matchAriaTree', () => {
         "actual": "
       - paragraph: Changed
       - text: extra
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       ",
         "expected": "
       - paragraph "": Original
@@ -3229,15 +3258,14 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - paragraph: Changed
       - text: extra
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       ",
         "pass": false,
       }
     `)
   })
 
-  // TOOD
-  test('merge todo 2', () => {
+  test('merge 3', () => {
     expect(
       match(
         `
