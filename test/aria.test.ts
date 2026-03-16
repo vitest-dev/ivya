@@ -119,7 +119,7 @@ describe('basic', () => {
         "captured": [
           "Not a link",
         ],
-        "pass": false,
+        "pass": true,
         "rendered": "
       - text: Not a link
       ",
@@ -433,7 +433,7 @@ describe('basic', () => {
         "captured": [
           "One Two Three",
         ],
-        "pass": false,
+        "pass": true,
         "rendered": "
       - text: One Two Three
       ",
@@ -450,7 +450,7 @@ describe('basic', () => {
         "captured": [
           "One Two Three",
         ],
-        "pass": false,
+        "pass": true,
         "rendered": "
       - text: One Two Three
       ",
@@ -876,7 +876,7 @@ describe('basic', () => {
         "captured": [
           "content",
         ],
-        "pass": false,
+        "pass": true,
         "rendered": "
       - text: content
       ",

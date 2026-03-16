@@ -15,7 +15,6 @@ import type {
   AriaTextValue,
   AriaTemplateNode,
   AriaTemplateRoleNode,
-  AriaTemplateTextNode,
 } from './folk/isomorphic/ariaSnapshot'
 
 // ---------------------------------------------------------------------------
@@ -24,6 +23,28 @@ import type {
 // Uses folk's matchesNode for boolean matching and folk's renderNodeLines
 // for actual-side rendering. Only the merge assembly and template rendering
 // (which Playwright doesn't need) are implemented here.
+//
+// Fragment semantics:
+//   A fragment node has no semantics of its own — it exists only because
+//   APIs must return a single root when the content is multiple siblings.
+//   captureAriaTree always returns a fragment root; parseAriaTemplate may
+//   or may not (it unwraps single-child fragments, following Playwright).
+//
+//   We normalize by flattening: fragment = its children. This happens
+//   inside mergeChildLists so every recursion level handles it uniformly.
+//
+//   Playwright takes a different approach: instead of flattening, it treats
+//   fragment as a wildcard role (matches any node) and relies on the entry
+//   point to walk root.children directly. Both are equally sound because
+//   fragment nodes never carry meaningful attributes or containerMode in
+//   practice — the parser only sets containerMode on top-level fragments,
+//   then unwraps single-child ones, so surviving fragments always have
+//   multiple children whose list semantics our flatten preserves correctly.
+//   The tradeoff is decomposition: Playwright keeps all match semantics in
+//   matchesNode; we split fragment handling into mergeChildLists, which is
+//   natural since we need that function anyway for three-way merge.
+//   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
+//   (matchesNode, matchesNodeDeep)
 // ---------------------------------------------------------------------------
 
 export interface MatchAriaResult {
@@ -37,21 +58,7 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  if (template.kind !== 'role') {
-    const rendered = renderAriaTree(root)
-    return {
-      pass: false,
-      actual: rendered,
-      expected: formatTextValue((template as AriaTemplateTextNode).text),
-      mergedExpected: rendered,
-    }
-  }
-
-  const result = mergeChildLists(
-    root.role === 'fragment' ? root.children : [root],
-    template.role === 'fragment' ? template.children || [] : [template],
-    ''
-  )
+  const result = mergeChildLists([root], [template], '')
 
   return {
     pass: result.pass,
@@ -194,6 +201,14 @@ function mergeChildLists(
   templates: AriaTemplateNode[],
   indent: string
 ): MergeLines {
+  // fragment = its children (a fragment has no semantics of its own)
+  children = children.flatMap((c) =>
+    typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
+  )
+  templates = templates.flatMap((t) =>
+    t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
+  )
+
   const actual: string[] = []
   const expected: string[] = []
   const merged: string[] = []
