@@ -3108,27 +3108,27 @@ describe('matchAriaTree', () => {
     expect(
       match(
         `
-      <button aria-label="User 99">Profile</button>
-      <p>You have 3 messages</p>
+      <button aria-label="1234">Pattern</button>
+      <p>Changed</p>
     `,
         `
-      - button /User \\d+/: Profile
-      - paragraph: You have 7 notifications
+      - button /\\d+/: Pattern
+      - paragraph: Original
     `
       )
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - button /User \\d+/: Profile
-      - paragraph: You have 3 messages
+      - button /\\d+/: Pattern
+      - paragraph: Changed
       ",
         "expected": "
-      - button /User \\d+/: Profile
-      - paragraph "": You have 7 notifications
+      - button /\\d+/: Pattern
+      - paragraph "": Original
       ",
         "mergedExpected": "
-      - button /User \\d+/: Profile
-      - paragraph: You have 3 messages
+      - button /\\d+/: Pattern
+      - paragraph: Changed
       ",
         "pass": false,
       }
@@ -3140,27 +3140,131 @@ describe('matchAriaTree', () => {
     expect(
       match(
         `
-      <p>You have 3 messages</p>
-      <button aria-label="User 99">Profile</button>
+      <p>Changed</p>
+      <button aria-label="1234">Pattern</button>
     `,
         `
-      - paragraph: You have 7 notifications
-      - button /User \\d+/: Profile
+      - paragraph: Original
+      - button /\\d+/: Pattern
     `
       )
     ).toMatchInlineSnapshot(`
       {
         "actual": "
-      - paragraph: You have 3 messages
-      - button "User 99": Profile
+      - paragraph: Changed
+      - button "1234": Pattern
       ",
         "expected": "
-      - paragraph "": You have 7 notifications
-      - button /User \\d+/: Profile
+      - paragraph "": Original
+      - button /\\d+/: Pattern
       ",
         "mergedExpected": "
-      - paragraph: You have 3 messages
-      - button "User 99": Profile
+      - paragraph: Changed
+      - button "1234": Pattern
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('merge ok', () => {
+    expect(
+      match(
+        `
+      <div>extra</div>
+      <button aria-label="1234">Pattern</button>
+      <p>Changed</p>
+    `,
+        `
+      - button /\\d+/: Pattern
+      - paragraph: Original
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - text: extra
+      - button /\\d+/: Pattern
+      - paragraph: Changed
+      ",
+        "expected": "
+      - button /\\d+/: Pattern
+      - paragraph "": Original
+      ",
+        "mergedExpected": "
+      - text: extra
+      - button /\\d+/: Pattern
+      - paragraph: Changed
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  // TODO:
+  test('merge todo 1', () => {
+    expect(
+      match(
+        `
+      <p>Changed</p>
+      <div>extra</div>
+      <button aria-label="1234">Pattern</button>
+    `,
+        `
+      - paragraph: Original
+      - button /\\d+/: Pattern
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: Changed
+      - text: extra
+      - button "1234": Pattern
+      ",
+        "expected": "
+      - paragraph "": Original
+      - button /\\d+/: Pattern
+      ",
+        "mergedExpected": "
+      - paragraph: Changed
+      - text: extra
+      - button "1234": Pattern
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  // TOOD
+  test('merge todo 2', () => {
+    expect(
+      match(
+        `
+      <p>Changed</p>
+      <button aria-label="1234">Pattern</button>
+      <div>extra</div>
+    `,
+        `
+      - paragraph: Original
+      - button /\d+/: Pattern
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: Changed
+      - button "1234": Pattern
+      - text: extra
+      ",
+        "expected": "
+      - paragraph "": Original
+      - button /d+/: Pattern
+      ",
+        "mergedExpected": "
+      - paragraph: Changed
+      - button "1234": Pattern
+      - text: extra
       ",
         "pass": false,
       }
