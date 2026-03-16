@@ -2640,6 +2640,8 @@ describe('matchAriaTree', () => {
     `)
   })
 
+  // TODO: expected renders `heading ""` — mergeNode treats empty-string name
+  // as a concrete mismatch vs "Hello", while matchesNode treats "" as "don't care".
   test('exact match', () => {
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
@@ -2652,7 +2654,7 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - heading "Hello" [level=1]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -2762,7 +2764,7 @@ describe('matchAriaTree', () => {
       - heading "Title" [level=1]
       - button "Submit"
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3345,7 +3347,7 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - button "Click me" [disabled]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3383,7 +3385,7 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - button "Toggle" [expanded]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3424,7 +3426,7 @@ describe('matchAriaTree', () => {
           "mergedExpected": "
         - button "Like" [pressed]
         ",
-          "pass": false,
+          "pass": true,
         }
       `)
   })
@@ -3443,7 +3445,7 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - button "Like" [pressed=mixed]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3484,7 +3486,7 @@ describe('matchAriaTree', () => {
         "mergedExpected": "
       - option "Row" [selected]
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3663,7 +3665,7 @@ describe('matchAriaTree', () => {
       - link "Link":
         - /url: /.*example.com/
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3798,7 +3800,7 @@ describe('matchAriaTree', () => {
       - link "Click here":
         - /url: /.*example.com/
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })
@@ -3924,7 +3926,7 @@ describe('matchAriaTree', () => {
       - link "Click here":
         - /url: https://example.com
       ",
-        "pass": false,
+        "pass": true,
       }
     `)
   })

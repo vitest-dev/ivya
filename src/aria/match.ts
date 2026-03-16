@@ -296,8 +296,8 @@ function mergeChildLists(
     return { actual, expected, merged, pass: false }
   }
 
-  // PARTIAL MERGE: all templates matched — preserve partial structure.
-  let allPass = true
+  // All templates matched (full-depth) — pass is true.
+  // mergeNode is only called here for rendering, not for pass/fail.
   for (let ci = 0; ci < children.length; ci++) {
     const ti = pairs.get(ci)
     if (ti !== undefined) {
@@ -305,13 +305,12 @@ function mergeChildLists(
       actual.push(...r.actual)
       expected.push(...r.expected)
       merged.push(...r.merged)
-      if (!r.pass) allPass = false
     } else {
       actual.push(...renderChildLines(children[ci], indent))
     }
   }
 
-  return { actual, expected, merged, pass: allPass }
+  return { actual, expected, merged, pass: true }
 }
 
 function mergeNode(
