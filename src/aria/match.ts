@@ -45,6 +45,23 @@ import type {
 //   natural since we need that function anyway for three-way merge.
 //   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
 //   (matchesNode, matchesNodeDeep)
+//
+// Complexity:
+//   Both our pairChildren and Playwright's containsList use greedy
+//   left-to-right sequential pairing. Each pair attempt calls matchesNode
+//   which recurses to full subtree depth — so pairing at one level is
+//   O(C) calls each costing O(subtree). Across the whole tree: O(N × T)
+//   where N = total actual nodes, T = total template nodes.
+//
+//   Structural difference: Playwright adds matchesNodeDeep, which walks
+//   the entire actual tree trying matchesNode at every node (locator-style
+//   "find this pattern anywhere"). We always match from root, so we don't
+//   have that extra traversal layer.
+//
+//   Playwright also has no three-way merge — on --update it re-renders
+//   the actual DOM with regex heuristics (renderStringsAsRegex /
+//   convertToBestGuessRegex) and overwrites the snapshot wholesale.
+//   Our merge preserves user-edited patterns from the expected side.
 // ---------------------------------------------------------------------------
 
 export interface MatchAriaResult {
