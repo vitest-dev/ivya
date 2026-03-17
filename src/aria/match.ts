@@ -77,10 +77,34 @@ import type {
 //   on failure and sibling lists are small in practice.
 // ---------------------------------------------------------------------------
 
+/**
+ * Invariants:
+ *   pass: true  → actual === expected === mergedExpected.
+ *                  Actual is rendered through the template's lens
+ *                  (preserving regexes, omitted names) so the diff
+ *                  is clean. TODO: not yet achieved — mergeNode
+ *                  currently renders actual with literal names even
+ *                  when template omits them.
+ *   pass: false → mergedExpected is written on --update. It should
+ *                  reflect actual DOM structure while preserving user
+ *                  intent from the template (regexes, omitted fields).
+ *                  actual vs expected shows the human-readable diff.
+ *
+ * Round-trip invariant:
+ *   element → captureAriaTree → renderAriaTree → parseAriaTemplate
+ *   → matchAriaTree(captured, parsed) → pass: true.
+ *   A rendered snapshot must always match its own source tree.
+ *   (Tested via runPipeline in aria.test.ts.)
+ */
 export interface MatchAriaResult {
+  /** Whether the actual tree satisfies the template. */
   pass: boolean
+  /** Rendered actual tree — for the "received" side of the diff. */
   actual: string
+  /** Rendered template — for the "expected" side of the diff. */
   expected: string
+  /** Merged snapshot to write on --update: actual structure with user
+   *  patterns (regexes, etc.) preserved from the template. */
   mergedExpected: string
 }
 

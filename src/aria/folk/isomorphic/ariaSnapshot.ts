@@ -588,7 +588,12 @@ export class KeyParser {
 
     const role = this._readIdentifier('role') as AriaTemplateRoleNode['role']
     this._skipWhitespace()
-    const name = this._readStringOrRegex() || ''
+    // DIVERGENCE(playwright): upstream uses `|| ''`, which makes
+    // `- heading [level=1]` produce name="" instead of name=undefined.
+    // This conflicts with matchesStringOrRegex treating "" as "no constraint"
+    // (falsy), causing asymmetry between matching and rendering.
+    // Upstream: https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/utils/isomorphic/ariaSnapshot.ts
+    const name = this._readStringOrRegex() || undefined
     const result: AriaTemplateRoleNode = { kind: 'role', role, name }
     this._readAttributes(result)
     this._skipWhitespace()

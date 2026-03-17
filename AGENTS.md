@@ -11,6 +11,22 @@ The `vendor/` directory is gitignored. For example, you can search for:
 - `packages/playwright-core/src/server/injected/ariaSnapshot.ts` — ARIA snapshot logic
 - `packages/playwright-core/src/server/injected/roleUtils.ts` — role/ARIA utilities
 
+## Upstream divergences
+
+Files under `src/aria/folk/` are derived from Playwright. When making intentional changes that differ from upstream, mark the site with:
+
+```ts
+// DIVERGENCE(playwright): <reason>
+```
+
+To list all divergences:
+
+```sh
+grep -rn 'DIVERGENCE(playwright)' src/aria/folk/
+```
+
+When syncing upstream or considering filing issues, review this list. If a divergence has a clear user-facing edge case, consider upstreaming to Playwright.
+
 ## Tests
 
 - Iterate on aria snapshot utility feature

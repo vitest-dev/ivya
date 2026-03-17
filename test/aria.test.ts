@@ -2393,7 +2393,7 @@ describe('parseAriaTemplate', () => {
           },
         ],
         "kind": "role",
-        "name": "",
+        "name": undefined,
         "role": "paragraph",
       }
     `)
@@ -2421,7 +2421,7 @@ describe('parseAriaTemplate', () => {
       {
         "children": [],
         "kind": "role",
-        "name": "",
+        "name": undefined,
         "props": {
           "url": {
             "normalized": "/.*example.com/",
@@ -2493,7 +2493,7 @@ describe('parseAriaTemplate', () => {
           },
         ],
         "kind": "role",
-        "name": "",
+        "name": undefined,
         "role": "paragraph",
       }
     `)
@@ -2532,13 +2532,13 @@ describe('parseAriaTemplate', () => {
               },
             ],
             "kind": "role",
-            "name": "",
+            "name": undefined,
             "role": "listitem",
           },
         ],
         "containerMode": "equal",
         "kind": "role",
-        "name": "",
+        "name": undefined,
         "role": "list",
       }
     `)
@@ -2573,11 +2573,11 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - navigation "Main":
-        - list "":
-          - listitem "":
+        - list:
+          - listitem:
             - link "Home":
               - /url: /home
-          - listitem "":
+          - listitem:
             - link "About":
               - /url: /about
       ",
@@ -2640,8 +2640,6 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  // TODO: expected renders `heading ""` — mergeNode treats empty-string name
-  // as a concrete mismatch vs "Hello", while matchesNode treats "" as "don't care".
   test('exact match', () => {
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
@@ -2649,7 +2647,7 @@ describe('matchAriaTree', () => {
       - heading "Hello" [level=1]
       ",
         "expected": "
-      - heading "" [level=1]
+      - heading [level=1]
       ",
         "mergedExpected": "
       - heading "Hello" [level=1]
@@ -2757,8 +2755,8 @@ describe('matchAriaTree', () => {
       - button "Submit"
       ",
         "expected": "
-      - heading "" [level=1]
-      - button ""
+      - heading [level=1]
+      - button
       ",
         "mergedExpected": "
       - heading "Title" [level=1]
@@ -2794,8 +2792,8 @@ describe('matchAriaTree', () => {
         - listitem: Three
       ",
         "expected": "
-      - list "":
-        - listitem "": One
+      - list:
+        - listitem: One
       ",
         "mergedExpected": "
       - list:
@@ -2830,8 +2828,8 @@ describe('matchAriaTree', () => {
         - listitem: Three
       ",
         "expected": "
-      - list "":
-        - listitem "": Two
+      - list:
+        - listitem: Two
       ",
         "mergedExpected": "
       - list:
@@ -2867,9 +2865,9 @@ describe('matchAriaTree', () => {
         - listitem: C
       ",
         "expected": "
-      - list "":
-        - listitem "": A
-        - listitem "": C
+      - list:
+        - listitem: A
+        - listitem: C
       ",
         "mergedExpected": "
       - list:
@@ -2901,7 +2899,7 @@ describe('matchAriaTree', () => {
         - listitem: Two
       ",
         "expected": "
-      - list ""
+      - list
       ",
         "mergedExpected": "
       - list
@@ -2945,9 +2943,9 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - navigation "Main":
-        - list "":
-          - listitem "":
-            - button "": Home
+        - list:
+          - listitem:
+            - button: Home
       ",
         "mergedExpected": "
       - navigation "Main":
@@ -2993,10 +2991,10 @@ describe('matchAriaTree', () => {
         - listitem: "Y"
       ",
         "expected": "
-      - list "":
-        - listitem "": A
-      - list "":
-        - listitem "": WRONG
+      - list:
+        - listitem: A
+      - list:
+        - listitem: WRONG
       ",
         "mergedExpected": "
       - list:
@@ -3039,7 +3037,7 @@ describe('matchAriaTree', () => {
       - heading "Title" [level=2]
       ",
         "expected": "
-      - heading "" [level=1]
+      - heading [level=1]
       ",
         "mergedExpected": "
       - heading "Title" [level=2]
@@ -3056,7 +3054,7 @@ describe('matchAriaTree', () => {
       - button "Click"
       ",
         "expected": "
-      - link ""
+      - link
       ",
         "mergedExpected": "
       - button "Click"
@@ -3078,7 +3076,7 @@ describe('matchAriaTree', () => {
       - paragraph: /You have \\d+ notifications/
       ",
         "expected": "
-      - paragraph "": /You have \\d+ notifications/
+      - paragraph: /You have \\d+ notifications/
       ",
         "mergedExpected": "
       - paragraph: /You have \\d+ notifications/
@@ -3096,7 +3094,7 @@ describe('matchAriaTree', () => {
         - paragraph: You have 7 notifications
         ",
           "expected": "
-        - paragraph "": /\\d+ errors/
+        - paragraph: /\\d+ errors/
         ",
           "mergedExpected": "
         - paragraph: You have 7 notifications
@@ -3126,7 +3124,7 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button /\\d+/: Pattern
-      - paragraph "": Original
+      - paragraph: Original
       ",
         "mergedExpected": "
       - button /\\d+/: Pattern
@@ -3156,7 +3154,7 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph "": Original
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
         "mergedExpected": "
@@ -3187,7 +3185,7 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph "": Original
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
         "mergedExpected": "
@@ -3221,7 +3219,7 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button /\\d+/: Pattern
-      - paragraph "": Original
+      - paragraph: Original
       ",
         "mergedExpected": "
       - text: extra
@@ -3254,7 +3252,7 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph "": Original
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
         "mergedExpected": "
@@ -3288,7 +3286,7 @@ describe('matchAriaTree', () => {
       - text: extra
       ",
         "expected": "
-      - paragraph "": Original
+      - paragraph: Original
       - button /d+/: Pattern
       ",
         "mergedExpected": "
@@ -3320,8 +3318,8 @@ describe('matchAriaTree', () => {
       - button "Cancel"
       ",
         "expected": "
-      - button "": Cancel
-      - paragraph "": /w+/
+      - button: Cancel
+      - paragraph: /w+/
       ",
         "mergedExpected": "
       - button "Submit"
@@ -3342,7 +3340,7 @@ describe('matchAriaTree', () => {
       - button "Click me" [disabled]
       ",
         "expected": "
-      - button "" [disabled]
+      - button [disabled]
       ",
         "mergedExpected": "
       - button "Click me" [disabled]
@@ -3360,7 +3358,7 @@ describe('matchAriaTree', () => {
         - button "Click me"
         ",
           "expected": "
-        - button "" [disabled]
+        - button [disabled]
         ",
           "mergedExpected": "
         - button "Click me"
@@ -3380,7 +3378,7 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "expected": "
-      - button "" [expanded]
+      - button [expanded]
       ",
         "mergedExpected": "
       - button "Toggle" [expanded]
@@ -3402,7 +3400,7 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "expected": "
-      - button "" [expanded=false]
+      - button [expanded=false]
       ",
         "mergedExpected": "
       - button "Toggle" [expanded]
@@ -3421,7 +3419,7 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed]
         ",
           "expected": "
-        - button "" [pressed]
+        - button [pressed]
         ",
           "mergedExpected": "
         - button "Like" [pressed]
@@ -3440,7 +3438,7 @@ describe('matchAriaTree', () => {
       - button "Like" [pressed=mixed]
       ",
         "expected": "
-      - button "" [pressed=mixed]
+      - button [pressed=mixed]
       ",
         "mergedExpected": "
       - button "Like" [pressed=mixed]
@@ -3458,7 +3456,7 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed=mixed]
         ",
           "expected": "
-        - button "" [pressed]
+        - button [pressed]
         ",
           "mergedExpected": "
         - button "Like" [pressed=mixed]
@@ -3481,7 +3479,7 @@ describe('matchAriaTree', () => {
       - option "Row" [selected]
       ",
         "expected": "
-      - option "" [selected]
+      - option [selected]
       ",
         "mergedExpected": "
       - option "Row" [selected]
@@ -3499,7 +3497,7 @@ describe('matchAriaTree', () => {
         - option "Row"
         ",
           "expected": "
-        - option "" [selected]
+        - option [selected]
         ",
           "mergedExpected": "
         - option "Row"
@@ -3625,9 +3623,9 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - navigation "Main":
-        - list "":
-          - listitem "":
-            - link "": Away
+        - list:
+          - listitem:
+            - link: Away
       ",
         "mergedExpected": "
       - navigation "Main":
@@ -3658,7 +3656,7 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: /.*example.com/
       ",
         "mergedExpected": "
@@ -3685,7 +3683,7 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: /.*other.com/
       ",
         "mergedExpected": "
@@ -3739,7 +3737,7 @@ describe('matchAriaTree', () => {
       - textbox "Enter name"
       ",
         "expected": "
-      - textbox "":
+      - textbox:
         - /placeholder: Enter name
       ",
         "mergedExpected": "
@@ -3764,7 +3762,7 @@ describe('matchAriaTree', () => {
       - textbox "Enter name"
       ",
         "expected": "
-      - textbox "":
+      - textbox:
         - /placeholder: Wrong
       ",
         "mergedExpected": "
@@ -3793,7 +3791,7 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: /.*example.com/
       ",
         "mergedExpected": "
@@ -3822,7 +3820,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: /.*other.com/
       ",
         "mergedExpected": "
@@ -3854,7 +3852,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link "":
+      - link:
         - text: Click here
         - /url: /.*example.com/
       ",
@@ -3887,7 +3885,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link "":
+      - link:
         - text: Wrong text
         - /url: /.*example.com/
       ",
@@ -3919,7 +3917,7 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: https://example.com
       ",
         "mergedExpected": "
@@ -3948,7 +3946,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link "":
+      - link:
         - /url: https://other.com
       ",
         "mergedExpected": "
