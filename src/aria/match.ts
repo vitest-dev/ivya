@@ -296,16 +296,11 @@ function mergeNode(
   // Text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
-    if (matched && cachedRegex(template.text)) {
-      const patternStr = `${indent}- text: ${formatTextValue(template.text)}`
-      return {
-        actual: [patternStr],
-        expected: [patternStr],
-        pass: true,
-      }
-    }
     if (matched) {
-      const line = `${indent}- text: ${node}`
+      const mergedText = cachedRegex(template.text)
+        ? formatTextValue(template.text)
+        : node
+      const line = `${indent}- text: ${mergedText}`
       return { actual: [line], expected: [line], pass: true }
     }
     return {
