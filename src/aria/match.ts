@@ -2,6 +2,7 @@ import {
   renderNodeLines,
   createAriaKey,
   renderAriaProps,
+  renderAriaTree,
 } from './folk/injected/ariaSnapshot'
 import {
   matchesNode,
@@ -91,7 +92,7 @@ import { formatTextValue, formatNameValue } from './template'
  *
  * Invariant:
  *   pass = true <=> resolved = expected
- *                   TODO: right? but this isn't actually true yet and
+ *                   TODO: right? but this doesn't hold yet.
  *                   we only have one direction
  *                     pass = true <= resolved = expected
  *                   or equivalently
@@ -127,7 +128,7 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // TODO: should recurse from mergeNode?
+  // recurse as lists to normalize top-level fragments
   const result = mergeChildLists([root], [template], '')
 
   return {
@@ -284,6 +285,7 @@ function mergeNode(
   }
 
   if (typeof node === 'string' || template.kind === 'text') {
+    // TODO: basically renderAriaNode(node) with indent?
     const line =
       typeof node === 'string'
         ? `${indent}- text: ${node}`
@@ -295,28 +297,10 @@ function mergeNode(
     return { resolved: [line], pass: false }
   }
 
-  const attrPass =
-    (template.level === undefined || template.level === node.level) &&
-    (template.checked === undefined || template.checked === node.checked) &&
-    (template.disabled === undefined || template.disabled === node.disabled) &&
-    (template.expanded === undefined || template.expanded === node.expanded) &&
-    (template.pressed === undefined || template.pressed === node.pressed) &&
-    (template.selected === undefined || template.selected === node.selected)
-
-  let propsPass = true
-  if (template.props) {
-    for (const [key, tv] of Object.entries(template.props)) {
-      if (!matchesTextValue(node.props[key] || '', tv)) {
-        propsPass = false
-        break
-      }
-    }
-  }
-
-  // Match role name (e.g. `- heading`)
+  // Match role name, e.g. `- role`
   let namePass = matchesStringOrRegex(node.name, template.name)
 
-  // Resolved key (e.g. `- heading "Hello" [level=1]`).
+  // Resolved key, e.g. `- role "name" [props]`
   const resolvedKey =
     namePass && isRegexName(template.name)
       ? renderKeyWithName(node, template.name)
@@ -350,22 +334,44 @@ function mergeNode(
     }
   }
 
+  let propsPass = true
+  if (template.props) {
+    for (const [key, tv] of Object.entries(template.props)) {
+      if (!matchesTextValue(node.props[key] || '', tv)) {
+        propsPass = false
+        break
+      }
+    }
+  }
+
+  const attrPass =
+    (template.level === undefined || template.level === node.level) &&
+    (template.checked === undefined || template.checked === node.checked) &&
+    (template.disabled === undefined || template.disabled === node.disabled) &&
+    (template.expanded === undefined || template.expanded === node.expanded) &&
+    (template.pressed === undefined || template.pressed === node.pressed) &&
+    (template.selected === undefined || template.selected === node.selected)
+
   const pass = namePass && attrPass && propsPass && childResult.pass
 
   const resolved: string[] = []
 
-  const hasChildren = childResult.resolved.length > 0 || resolvedPseudo.length > 0
-
-  if (!hasChildren) {
+  if (!childResult.resolved.length && !resolvedPseudo.length) {
+    // one liner node with no props, e.g. `- role "name" [props]`
     resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
     childResult.resolved.length === 1 &&
-    !resolvedPseudo.length &&
-    childResult.resolved[0].trimStart().startsWith('- text: ')
+    childResult.resolved[0].trimStart().startsWith('- text: ') &&
+    !resolvedPseudo.length
   ) {
+    // one liner node with text child, e.g. `- role "name" [props]: text`
     const text = childResult.resolved[0].trimStart().slice('- text: '.length)
     resolved.push(`${indent}- ${resolvedKey}: ${text}`)
   } else {
+    // multi-line node with children and/or props, e.g.
+    // - role "name" [props]:
+    //    - child
+    //    - /prop: value
     resolved.push(`${indent}- ${resolvedKey}:`)
     resolved.push(...childResult.resolved)
     resolved.push(...resolvedPseudo)
