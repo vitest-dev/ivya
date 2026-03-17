@@ -13,7 +13,7 @@ import {
   renderAriaTree,
   renderAriaTemplate,
 } from '../src/aria'
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import * as yaml from 'yaml'
 
 function parseAriaTemplate(text: string) {
@@ -36,14 +36,13 @@ function match(html: string, template: string) {
   }
 }
 
-// TODO: use vi.defineHelper
-function runPipeline(
+const runPipeline = vi.defineHelper((
   htmlOrElement: string | Element,
   options?: {
     assertPass?: boolean
     assertAriaTemplateRoundTrip?: boolean
   }
-) {
+) => {
   const captured =
     typeof htmlOrElement === 'string'
       ? capture(htmlOrElement)
@@ -52,11 +51,11 @@ function runPipeline(
   const parsed = parseAriaTemplate(rendered)
   const matched = matchAriaTree(captured, parsed)
   if (options?.assertPass !== false) {
-    expect.soft(matched.pass).toBe(true)
+    expect.soft(matched.pass, `roundtrip should match`).toBe(true)
   }
   if (options?.assertAriaTemplateRoundTrip !== false) {
     const renderedTemplate = renderAriaTemplate(parsed)
-    expect.soft(renderedTemplate).toBe(rendered)
+    expect.soft(renderedTemplate, `template roundtrip should match`).toBe(rendered)
   }
   return {
     captured,
@@ -69,7 +68,7 @@ function runPipeline(
       pass: matched.pass,
     },
   }
-}
+})
 
 describe('basic', () => {
   test('heading', () => {
