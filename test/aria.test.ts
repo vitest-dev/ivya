@@ -2659,7 +2659,7 @@ describe('matchAriaTree', () => {
       - heading "Hello" [level=1]
       ",
         "expected": "
-      - heading "Hello" [level=1]
+      - heading [level=1]
       ",
         "pass": true,
         "rawExpected": "
@@ -2767,8 +2767,8 @@ describe('matchAriaTree', () => {
       - button "Submit"
       ",
         "expected": "
-      - heading "Title" [level=1]
-      - button "Submit"
+      - heading [level=1]
+      - button
       ",
         "pass": true,
         "rawExpected": "
@@ -3448,7 +3448,7 @@ describe('matchAriaTree', () => {
       - button "Click me" [disabled]
       ",
         "expected": "
-      - button "Click me" [disabled]
+      - button [disabled]
       ",
         "pass": true,
         "rawExpected": "
@@ -3486,7 +3486,7 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "expected": "
-      - button "Toggle" [expanded]
+      - button [expanded]
       ",
         "pass": true,
         "rawExpected": "
@@ -3527,7 +3527,7 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed]
         ",
           "expected": "
-        - button "Like" [pressed]
+        - button [pressed]
         ",
           "pass": true,
           "rawExpected": "
@@ -3546,7 +3546,7 @@ describe('matchAriaTree', () => {
       - button "Like" [pressed=mixed]
       ",
         "expected": "
-      - button "Like" [pressed=mixed]
+      - button [pressed=mixed]
       ",
         "pass": true,
         "rawExpected": "
@@ -3587,7 +3587,7 @@ describe('matchAriaTree', () => {
       - option "Row" [selected]
       ",
         "expected": "
-      - option "Row" [selected]
+      - option [selected]
       ",
         "pass": true,
         "rawExpected": "
@@ -3764,7 +3764,7 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link "Link":
+      - link:
         - /url: /.*example.com/
       ",
         "pass": true,
@@ -3899,7 +3899,7 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link "Click here":
+      - link:
         - /url: /.*example.com/
       ",
         "pass": true,
@@ -4025,7 +4025,7 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "expected": "
-      - link "Click here":
+      - link:
         - /url: https://example.com
       ",
         "pass": true,

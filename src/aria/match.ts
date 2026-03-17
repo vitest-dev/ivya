@@ -327,21 +327,6 @@ function mergeNode(
     return { actual: [actualLine], expected: [actualLine], pass: false }
   }
 
-  // Role node — determine the name to show
-  let namePass = true
-  let expectedName: AriaRegex | string = node.name
-  if (template.name !== undefined) {
-    if (isRegexName(template.name)) {
-      if (matchesStringOrRegex(node.name, template.name)) {
-        expectedName = template.name
-      } else {
-        namePass = false
-      }
-    } else if (template.name !== node.name) {
-      namePass = false
-    }
-  }
-
   const attrPass =
     (template.level === undefined || template.level === node.level) &&
     (template.checked === undefined || template.checked === node.checked) &&
@@ -360,15 +345,23 @@ function mergeNode(
     }
   }
 
-  // Build key lines — use createAriaKey for plain actual, renderActualKeyWithName for overrides
+  // Match role (e.g. `- heading`)
+  const expectedName = template.name
+  let namePass = matchesStringOrRegex(node.name, expectedName)
+
+  // Match key lines (e.g. `- heading "Hello" [level=1]`)
+  // TODO: "actual" feels wrong here too. It should adopted through "template" pattern lens.
+
+  // actual: adopts regex from template when matched, otherwise literal
   const actualKey =
     namePass && isRegexName(template.name)
       ? renderActualKeyWithName(node, template.name)
       : createAriaKey(node)
+  // expected: preserves template's name exactly (including omission)
   const expectedKey =
-    expectedName === node.name
-      ? createAriaKey(node)
-      : renderActualKeyWithName(node, expectedName)
+    expectedName !== undefined
+      ? renderActualKeyWithName(node, expectedName)
+      : `${node.role}${renderAriaProps(node)}`
 
   // Recurse into children
   const childResult = mergeChildLists(
