@@ -25,20 +25,34 @@ function capture(html: string) {
   return generateAriaTree(document.body)
 }
 
-function match(html: string, template: string) {
-  const tree = capture(html)
-  const templateTree = parseAriaTemplate(template)
-  const r = matchAriaTree(tree, templateTree)
-  return {
-    pass: r.pass,
-    // actual: `\n${r.actual}\n`,
-    // expected: `\n${r.expected}\n`,
-    // rawExpected: `\n${renderAriaTemplate(templateTree)}\n`,
-    actual: `\n${renderAriaTree(tree)}\n`,
-    actualResolved: `\n${r.resolved}\n`,
-    expected: `\n${renderAriaTemplate(templateTree)}\n`,
+const match = vi.defineHelper(
+  (html: string, template: string, options?: { assertInvariant?: boolean }) => {
+    const tree = capture(html)
+    const templateTree = parseAriaTemplate(template)
+    const r = matchAriaTree(tree, templateTree)
+    const actual = renderAriaTree(tree)
+    const expected = renderAriaTemplate(templateTree)
+    if (options?.assertInvariant !== false) {
+      // TODO: not invariant yet
+      if (r.pass) {
+        expect(r.resolved, `when pass=true, resolved should equal expected`).toBe(
+          expected
+        )
+      } else {
+        expect(
+          r.resolved,
+          `when pass=false, resolved should not equal expected`
+        ).not.toBe(expected)
+      }
+    }
+    return {
+      pass: r.pass,
+      actual: `\n${actual}\n`,
+      actualResolved: `\n${r.resolved}\n`,
+      expected: `\n${expected}\n`,
+    }
   }
-}
+)
 
 const runPipeline = vi.defineHelper(
   (
