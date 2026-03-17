@@ -313,10 +313,10 @@ function mergeNode(
     }
   }
 
-  // Match role (e.g. `- heading`)
+  // Match role name (e.g. `- heading`)
   let namePass = matchesStringOrRegex(node.name, template.name)
 
-  // Resolved key: adopts regex from template when matched, otherwise literal
+  // Resolved key (e.g. `- heading "Hello" [level=1]`).
   const resolvedKey =
     namePass && isRegexName(template.name)
       ? renderKeyWithName(node, template.name)
