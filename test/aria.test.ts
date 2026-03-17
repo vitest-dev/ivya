@@ -29,9 +29,22 @@ function match(html: string, template: string) {
   return {
     pass: r.pass,
     actual: `\n${r.actual}\n`,
+    rawExpected: `\n${stripIndent(template).trim()}\n`,
     expected: `\n${r.expected}\n`,
-    resolvedExpected: `\n${r.resolvedExpected}\n`,
   }
+}
+
+function stripIndent(text: string) {
+  const lines = text.split('\n')
+  const indent = lines.reduce(
+    (min, line) => {
+      if (line.trim() === '') return min
+      const leadingSpaces = line.match(/^ */)?.[0].length ?? 0
+      return min === null ? leadingSpaces : Math.min(min, leadingSpaces)
+    },
+    null as number | null
+  )
+  return lines.map((line) => line.slice(indent ?? 0)).join('\n')
 }
 
 function runPipeline(
@@ -2582,7 +2595,7 @@ describe('matchAriaTree', () => {
               - /url: /about
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - navigation "Main":
         - list:
           - listitem:
@@ -2627,7 +2640,7 @@ describe('matchAriaTree', () => {
       - option "G" [selected]
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - checkbox "A" [checked]
       - button "B" [disabled]
       - button "C" [expanded]
@@ -2641,17 +2654,18 @@ describe('matchAriaTree', () => {
   })
 
   test('exact match', () => {
+    // TODO: expected === rawExpected invariant on pass = true?
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
         "actual": "
       - heading "Hello" [level=1]
       ",
         "expected": "
-      - heading [level=1]
+      - heading "Hello" [level=1]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - heading "Hello" [level=1]
+        "rawExpected": "
+      - heading [level=1]
       ",
       }
     `)
@@ -2668,7 +2682,7 @@ describe('matchAriaTree', () => {
         - button "Submit"
         ",
           "pass": true,
-          "resolvedExpected": "
+          "rawExpected": "
         - button "Submit"
         ",
         }
@@ -2683,11 +2697,11 @@ describe('matchAriaTree', () => {
         - button "Submit": Go
         ",
           "expected": "
-        - button "Cancel"
+        - button "Submit": Go
         ",
           "pass": false,
-          "resolvedExpected": "
-        - button "Submit": Go
+          "rawExpected": "
+        - button "Cancel"
         ",
         }
       `)
@@ -2704,7 +2718,7 @@ describe('matchAriaTree', () => {
         - button /User \\d+/
         ",
           "pass": true,
-          "resolvedExpected": "
+          "rawExpected": "
         - button /User \\d+/
         ",
         }
@@ -2719,11 +2733,11 @@ describe('matchAriaTree', () => {
         - button "User 42": Go
         ",
           "expected": "
-        - button /Goodbye/
+        - button "User 42": Go
         ",
           "pass": false,
-          "resolvedExpected": "
-        - button "User 42": Go
+          "rawExpected": "
+        - button /Goodbye/
         ",
         }
       `)
@@ -2755,13 +2769,13 @@ describe('matchAriaTree', () => {
       - button "Submit"
       ",
         "expected": "
-      - heading [level=1]
-      - button
-      ",
-        "pass": true,
-        "resolvedExpected": "
       - heading "Title" [level=1]
       - button "Submit"
+      ",
+        "pass": true,
+        "rawExpected": "
+      - heading [level=1]
+      - button
       ",
       }
     `)
@@ -2796,7 +2810,7 @@ describe('matchAriaTree', () => {
         - listitem: One
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - list:
         - listitem: One
       ",
@@ -2832,7 +2846,7 @@ describe('matchAriaTree', () => {
         - listitem: Two
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - list:
         - listitem: Two
       ",
@@ -2870,7 +2884,7 @@ describe('matchAriaTree', () => {
         - listitem: C
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - list:
         - listitem: A
         - listitem: C
@@ -2902,7 +2916,7 @@ describe('matchAriaTree', () => {
       - list
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - list
       ",
       }
@@ -2945,18 +2959,18 @@ describe('matchAriaTree', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - button: Home
-      ",
-        "pass": false,
-        "resolvedExpected": "
-      - navigation "Main":
-        - list:
-          - listitem:
             - button "Home"
           - listitem:
             - button "About"
           - listitem:
             - button "Contact"
+      ",
+        "pass": false,
+        "rawExpected": "
+      - navigation "Main":
+        - list:
+          - listitem:
+            - button: Home
       ",
       }
     `)
@@ -2994,15 +3008,15 @@ describe('matchAriaTree', () => {
       - list:
         - listitem: A
       - list:
-        - listitem: WRONG
+        - listitem: X
+        - listitem: "Y"
       ",
         "pass": false,
-        "resolvedExpected": "
+        "rawExpected": "
       - list:
         - listitem: A
       - list:
-        - listitem: X
-        - listitem: "Y"
+        - listitem: WRONG
       ",
       }
     `)
@@ -3023,7 +3037,7 @@ describe('matchAriaTree', () => {
       - checkbox "A" [checked]
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - checkbox "A" [checked]
       ",
       }
@@ -3037,11 +3051,11 @@ describe('matchAriaTree', () => {
       - heading "Title" [level=2]
       ",
         "expected": "
-      - heading [level=1]
+      - heading "Title" [level=2]
       ",
         "pass": false,
-        "resolvedExpected": "
-      - heading "Title" [level=2]
+        "rawExpected": "
+      - heading [level=1]
       ",
       }
     `)
@@ -3054,11 +3068,11 @@ describe('matchAriaTree', () => {
       - button "Click"
       ",
         "expected": "
-      - link
+      - button "Click"
       ",
         "pass": false,
-        "resolvedExpected": "
-      - button "Click"
+        "rawExpected": "
+      - link
       ",
       }
     `)
@@ -3079,7 +3093,7 @@ describe('matchAriaTree', () => {
       - paragraph: /You have \\d+ notifications/
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - paragraph: /You have \\d+ notifications/
       ",
       }
@@ -3094,11 +3108,11 @@ describe('matchAriaTree', () => {
         - paragraph: You have 7 notifications
         ",
           "expected": "
-        - paragraph: /\\d+ errors/
+        - paragraph: You have 7 notifications
         ",
           "pass": false,
-          "resolvedExpected": "
-        - paragraph: You have 7 notifications
+          "rawExpected": "
+        - paragraph: /\\d+ errors/
         ",
         }
       `)
@@ -3124,12 +3138,12 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button /\\d+/: Pattern
-      - paragraph: Original
+      - paragraph: Changed
       ",
         "pass": false,
-        "resolvedExpected": "
+        "rawExpected": "
       - button /\\d+/: Pattern
-      - paragraph: Changed
+      - paragraph: Original
       ",
       }
     `)
@@ -3154,12 +3168,12 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph: Original
+      - paragraph: Changed
       - button /\\d+/: Pattern
       ",
         "pass": false,
-        "resolvedExpected": "
-      - paragraph: Changed
+        "rawExpected": "
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
       }
@@ -3185,12 +3199,12 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph: Original
+      - heading "ChangedWithTag" [level=1]
       - button /\\d+/: Pattern
       ",
         "pass": false,
-        "resolvedExpected": "
-      - heading "ChangedWithTag" [level=1]
+        "rawExpected": "
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
       }
@@ -3218,14 +3232,14 @@ describe('matchAriaTree', () => {
       - paragraph: Changed
       ",
         "expected": "
-      - button /\\d+/: Pattern
-      - paragraph: Original
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - text: extra
       - button /\\d+/: Pattern
       - paragraph: Changed
+      ",
+        "pass": false,
+        "rawExpected": "
+      - button /\\d+/: Pattern
+      - paragraph: Original
       ",
       }
     `)
@@ -3252,13 +3266,13 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       ",
         "expected": "
-      - paragraph: Original
+      - paragraph: Changed
+      - text: extra
       - button /\\d+/: Pattern
       ",
         "pass": false,
-        "resolvedExpected": "
-      - paragraph: Changed
-      - text: extra
+        "rawExpected": "
+      - paragraph: Original
       - button /\\d+/: Pattern
       ",
       }
@@ -3286,14 +3300,14 @@ describe('matchAriaTree', () => {
       - text: extra
       ",
         "expected": "
-      - paragraph: Original
-      - button /d+/: Pattern
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - paragraph: Changed
       - button "1234": Pattern
       - text: extra
+      ",
+        "pass": false,
+        "rawExpected": "
+      - paragraph: Original
+      - button /d+/: Pattern
       ",
       }
     `)
@@ -3318,13 +3332,13 @@ describe('matchAriaTree', () => {
       - button "Cancel"
       ",
         "expected": "
-      - button: Cancel
-      - paragraph: /w+/
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - button "Submit"
       - button "Cancel"
+      ",
+        "pass": false,
+        "rawExpected": "
+      - button: Cancel
+      - paragraph: /w+/
       ",
       }
     `)
@@ -3340,11 +3354,11 @@ describe('matchAriaTree', () => {
       - button "Click me" [disabled]
       ",
         "expected": "
-      - button [disabled]
+      - button "Click me" [disabled]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - button "Click me" [disabled]
+        "rawExpected": "
+      - button [disabled]
       ",
       }
     `)
@@ -3358,11 +3372,11 @@ describe('matchAriaTree', () => {
         - button "Click me"
         ",
           "expected": "
-        - button [disabled]
+        - button "Click me"
         ",
           "pass": false,
-          "resolvedExpected": "
-        - button "Click me"
+          "rawExpected": "
+        - button [disabled]
         ",
         }
       `)
@@ -3378,11 +3392,11 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "expected": "
-      - button [expanded]
+      - button "Toggle" [expanded]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - button "Toggle" [expanded]
+        "rawExpected": "
+      - button [expanded]
       ",
       }
     `)
@@ -3400,11 +3414,11 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "expected": "
-      - button [expanded=false]
+      - button "Toggle" [expanded]
       ",
         "pass": false,
-        "resolvedExpected": "
-      - button "Toggle" [expanded]
+        "rawExpected": "
+      - button [expanded=false]
       ",
       }
     `)
@@ -3419,11 +3433,11 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed]
         ",
           "expected": "
-        - button [pressed]
+        - button "Like" [pressed]
         ",
           "pass": true,
-          "resolvedExpected": "
-        - button "Like" [pressed]
+          "rawExpected": "
+        - button [pressed]
         ",
         }
       `)
@@ -3438,11 +3452,11 @@ describe('matchAriaTree', () => {
       - button "Like" [pressed=mixed]
       ",
         "expected": "
-      - button [pressed=mixed]
+      - button "Like" [pressed=mixed]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - button "Like" [pressed=mixed]
+        "rawExpected": "
+      - button [pressed=mixed]
       ",
       }
     `)
@@ -3456,11 +3470,11 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed=mixed]
         ",
           "expected": "
-        - button [pressed]
+        - button "Like" [pressed=mixed]
         ",
           "pass": false,
-          "resolvedExpected": "
-        - button "Like" [pressed=mixed]
+          "rawExpected": "
+        - button [pressed]
         ",
         }
       `)
@@ -3479,11 +3493,11 @@ describe('matchAriaTree', () => {
       - option "Row" [selected]
       ",
         "expected": "
-      - option [selected]
+      - option "Row" [selected]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - option "Row" [selected]
+        "rawExpected": "
+      - option [selected]
       ",
       }
     `)
@@ -3497,11 +3511,11 @@ describe('matchAriaTree', () => {
         - option "Row"
         ",
           "expected": "
-        - option [selected]
+        - option "Row"
         ",
           "pass": false,
-          "resolvedExpected": "
-        - option "Row"
+          "rawExpected": "
+        - option [selected]
         ",
         }
       `)
@@ -3523,7 +3537,7 @@ describe('matchAriaTree', () => {
       - checkbox "A" [checked=mixed]
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - checkbox "A" [checked=mixed]
       ",
       }
@@ -3542,11 +3556,11 @@ describe('matchAriaTree', () => {
       - checkbox "A" [checked=mixed]
       ",
         "expected": "
-      - checkbox "A" [checked]
+      - checkbox "A" [checked=mixed]
       ",
         "pass": false,
-        "resolvedExpected": "
-      - checkbox "A" [checked=mixed]
+        "rawExpected": "
+      - checkbox "A" [checked]
       ",
       }
     `)
@@ -3575,11 +3589,11 @@ describe('matchAriaTree', () => {
       - heading "title 2" [level=1]
       ",
         "expected": "
-      - heading "title"
+      - heading "title" [level=1]
       ",
         "pass": true,
-        "resolvedExpected": "
-      - heading "title" [level=1]
+        "rawExpected": "
+      - heading "title"
       ",
       }
     `)
@@ -3625,15 +3639,15 @@ describe('matchAriaTree', () => {
       - navigation "Main":
         - list:
           - listitem:
-            - link: Away
+            - link "Home":
+              - /url: /a
       ",
         "pass": false,
-        "resolvedExpected": "
+        "rawExpected": "
       - navigation "Main":
         - list:
           - listitem:
-            - link "Home":
-              - /url: /a
+            - link: Away
       ",
       }
     `)
@@ -3656,12 +3670,12 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link:
+      - link "Link":
         - /url: /.*example.com/
       ",
         "pass": true,
-        "resolvedExpected": "
-      - link "Link":
+        "rawExpected": "
+      - link:
         - /url: /.*example.com/
       ",
       }
@@ -3683,13 +3697,13 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "expected": "
-      - link:
-        - /url: /.*other.com/
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - link "Link":
         - /url: https://example.com
+      ",
+        "pass": false,
+        "rawExpected": "
+      - link:
+        - /url: /.*other.com/
       ",
       }
     `)
@@ -3715,7 +3729,7 @@ describe('matchAriaTree', () => {
         - /placeholder: Enter name
       ",
         "pass": true,
-        "resolvedExpected": "
+        "rawExpected": "
       - textbox "Label":
         - /placeholder: Enter name
       ",
@@ -3737,12 +3751,12 @@ describe('matchAriaTree', () => {
       - textbox "Enter name"
       ",
         "expected": "
-      - textbox:
-        - /placeholder: Enter name
+      - textbox "Enter name"
       ",
         "pass": false,
-        "resolvedExpected": "
-      - textbox "Enter name"
+        "rawExpected": "
+      - textbox:
+        - /placeholder: Enter name
       ",
       }
     `)
@@ -3762,12 +3776,12 @@ describe('matchAriaTree', () => {
       - textbox "Enter name"
       ",
         "expected": "
-      - textbox:
-        - /placeholder: Wrong
+      - textbox "Enter name"
       ",
         "pass": false,
-        "resolvedExpected": "
-      - textbox "Enter name"
+        "rawExpected": "
+      - textbox:
+        - /placeholder: Wrong
       ",
       }
     `)
@@ -3791,12 +3805,12 @@ describe('matchAriaTree', () => {
         - /url: /.*example.com/
       ",
         "expected": "
-      - link:
+      - link "Click here":
         - /url: /.*example.com/
       ",
         "pass": true,
-        "resolvedExpected": "
-      - link "Click here":
+        "rawExpected": "
+      - link:
         - /url: /.*example.com/
       ",
       }
@@ -3820,15 +3834,15 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link:
-        - /url: /.*other.com/
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
+      ",
+        "pass": false,
+        "rawExpected": "
+      - link:
+        - /url: /.*other.com/
       ",
       }
     `)
@@ -3852,16 +3866,16 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link:
-        - text: Click here
-        - /url: /.*example.com/
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
+      ",
+        "pass": false,
+        "rawExpected": "
+      - link:
+        - text: Click here
+        - /url: /.*example.com/
       ",
       }
     `)
@@ -3885,16 +3899,16 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link:
-        - text: Wrong text
-        - /url: /.*example.com/
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
+      ",
+        "pass": false,
+        "rawExpected": "
+      - link:
+        - text: Wrong text
+        - /url: /.*example.com/
       ",
       }
     `)
@@ -3917,12 +3931,12 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "expected": "
-      - link:
+      - link "Click here":
         - /url: https://example.com
       ",
         "pass": true,
-        "resolvedExpected": "
-      - link "Click here":
+        "rawExpected": "
+      - link:
         - /url: https://example.com
       ",
       }
@@ -3946,15 +3960,15 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "expected": "
-      - link:
-        - /url: https://other.com
-      ",
-        "pass": false,
-        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
+      ",
+        "pass": false,
+        "rawExpected": "
+      - link:
+        - /url: https://other.com
       ",
       }
     `)
@@ -4027,11 +4041,11 @@ describe('aria-expanded', () => {
       - button "Menu"
       ",
         "expected": "
-      - button "Menu" [expanded=false]
+      - button "Menu"
       ",
         "pass": true,
-        "resolvedExpected": "
-      - button "Menu"
+        "rawExpected": "
+      - button "Menu" [expanded=false]
       ",
       }
     `)
@@ -4045,11 +4059,11 @@ describe('aria-expanded', () => {
         - button "Menu"
         ",
           "expected": "
-        - button "Menu" [expanded=false]
+        - button "Menu"
         ",
           "pass": false,
-          "resolvedExpected": "
-        - button "Menu"
+          "rawExpected": "
+        - button "Menu" [expanded=false]
         ",
         }
       `)

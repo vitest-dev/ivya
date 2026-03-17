@@ -1,5 +1,4 @@
 import {
-  renderAriaTree,
   renderNodeLines,
   createAriaKey,
   renderAriaProps,
@@ -15,7 +14,6 @@ import type {
   AriaRegex,
   AriaTextValue,
   AriaTemplateNode,
-  AriaTemplateRoleNode,
 } from './folk/isomorphic/ariaSnapshot'
 
 // ---------------------------------------------------------------------------
@@ -78,28 +76,47 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Conceptually, mergeNode produces four views of each (node, template) pair:
+ * The match algorithm produces two resolved views:
  *
- *   actual             — raw DOM rendering, no template influence
- *   expected           — raw template rendering
- *   resolvedActual   — actual rendered through template's lens
- *                        (adopt regexes, omit name where template omits it)
- *   resolvedExpected — template filled in with actual values
- *                        (what gets written on --update)
+ *   actual   — DOM tree rendered through the template's lens (regexes
+ *              adopted, names omitted where template omits them).
+ *   expected — template filled in with actual DOM values. This is
+ *              what gets written on --update.
  *
- * The canonical invariant: pass ↔ resolvedActual === resolvedExpected.
- * Both sides normalize toward a common middle; when they meet, the trees
- * match. When they diverge, the gap shows what changed.
+ * These are NOT raw renderings of the inputs:
+ *   rawActual   = renderAriaTree(root)
+ *   rawExpected = the original YAML template string before parsing
+ * Both are independent of the match algorithm and available to the
+ * caller without matchAriaTree.
  *
- * For vitest integration, the diff should use resolvedActual vs
- * resolvedExpected — every difference shown is then a difference
- * that --update will resolve. Using raw actual vs expected would show
- * false differences (e.g. omitted names) that --update doesn't touch.
+ * Invariants:
+ *   pass: true ⟺ actual === expected
+ *                   More precisely:
+ *                   rawActual ⋟ actual === expected === rawExpected
+ *                   Only the actual side loses specificity (adopting
+ *                   template patterns like regexes, omitted names).
+ *                   The expected side is unchanged — the template as
+ *                   written is already correct when it passes.
+ *                   TODO:
+ *                   currently we actually don't have `expected === rawExpected` invariant,
+ *                   but this is likely a bug. However this case doesn't affect users
+ *                   since `pass: true` doesn't cause error diff nor new snapshot.
+ *   pass: false ⟹ rawActual ⋟ actual != expected
+ *                   paired children are normalized
+ *                   through the template's lens, e.g. regex name adopted;
+ *                   unpaired children are rendered raw). When no children
+ *                   can be paired at all, rawActual = actual.
+ *                   expected is written on --update.
  *
- * Currently we only expose three fields (actual, expected, mergedExpected)
- * where mergedExpected ≈ resolvedExpected, and actual is inconsistently
- * partially resolved. Refactoring to four explicit fields would make the
- * algorithm's symmetry visible and the invariant checkable.
+ * Diff display (pass: false):
+ *   Use actual vs rawExpected. The user wants to see their original
+ *   assertion on the right side, not the resolved version. The left
+ *   side (actual) normalizes matched regions so the diff highlights
+ *   only genuine mismatches, not pattern-vs-literal noise.
+ *
+ * Snapshot update (pass: false):
+ *   Write expected. It preserves user patterns (regexes, omitted names)
+ *   while incorporating actual DOM structure.
  *
  * Round-trip invariant:
  *   element → captureAriaTree → renderAriaTree → parseAriaTemplate
@@ -110,13 +127,10 @@ import type {
 export interface MatchAriaResult {
   /** Whether the actual tree satisfies the template. */
   pass: boolean
-  /** Rendered actual tree — for the "received" side of the diff. */
+  /** DOM tree resolved through the template's lens. For diff left side. */
   actual: string
-  /** Rendered template — for the "expected" side of the diff. */
+  /** Template resolved with actual values. Written on --update. */
   expected: string
-  /** Merged snapshot to write on --update:
-   *  actual structure with user patterns (regexes, etc.) preserved. */
-  resolvedExpected: string
 }
 
 export function matchAriaTree(
@@ -129,7 +143,6 @@ export function matchAriaTree(
     pass: result.pass,
     actual: result.actual.join('\n'),
     expected: result.expected.join('\n'),
-    resolvedExpected: result.merged.join('\n'),
   }
 }
 
@@ -140,7 +153,6 @@ export function matchAriaTree(
 interface MergeLines {
   actual: string[]
   expected: string[]
-  merged: string[]
   pass: boolean
 }
 
@@ -158,52 +170,6 @@ function formatNameValue(name: AriaRegex | string): string {
 
 function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
-}
-
-// --- Template rendering (Playwright doesn't render templates back to text) ---
-
-function renderTemplateKey(tmpl: AriaTemplateRoleNode): string {
-  let key = tmpl.role
-  if (tmpl.name !== undefined) key += ` ${formatNameValue(tmpl.name)}`
-  key += renderAriaProps(tmpl, { renderExpandedFalse: true })
-  return key
-}
-
-function renderTemplateNodeLines(
-  tmpl: AriaTemplateRoleNode,
-  indent: string,
-  lines: string[]
-): void {
-  const key = renderTemplateKey(tmpl)
-  const children = tmpl.children || []
-
-  const pseudoLines: string[] = []
-  if (tmpl.props) {
-    for (const [name, tv] of Object.entries(tmpl.props))
-      pseudoLines.push(`${indent}  - /${name}: ${formatTextValue(tv)}`)
-  }
-
-  if (children.length === 0 && pseudoLines.length === 0) {
-    lines.push(`${indent}- ${key}`)
-    return
-  }
-  if (
-    children.length === 1 &&
-    children[0].kind === 'text' &&
-    pseudoLines.length === 0
-  ) {
-    lines.push(`${indent}- ${key}: ${formatTextValue(children[0].text)}`)
-    return
-  }
-  lines.push(`${indent}- ${key}:`)
-  for (const child of children) {
-    if (child.kind === 'text') {
-      lines.push(`${indent}  - text: ${formatTextValue(child.text)}`)
-    } else {
-      renderTemplateNodeLines(child, `${indent}  `, lines)
-    }
-  }
-  lines.push(...pseudoLines)
 }
 
 // --- Actual-side key with name override (for regex-transparent diffing) ---
@@ -286,7 +252,6 @@ function mergeChildLists(
 
   const actual: string[] = []
   const expected: string[] = []
-  const merged: string[] = []
 
   const pairs = pairChildren(children, templates)
   const allTemplatesMatched = pairs.size === templates.length
@@ -297,38 +262,20 @@ function mergeChildLists(
     // in the merge output instead of dumping full actual.
     const allPairs = pairChildrenFull(children, templates)
 
-    const mergeResults = new Map<number, MergeLines>()
     for (let ci = 0; ci < children.length; ci++) {
       const ti = allPairs.get(ci)
       if (ti !== undefined) {
         const r = mergeNode(children[ci], templates[ti], indent)
-        mergeResults.set(ti, r)
         actual.push(...r.actual)
-        merged.push(...r.merged)
+        expected.push(...r.expected)
       } else {
         const rendered = renderChildLines(children[ci], indent)
         actual.push(...rendered)
-        merged.push(...rendered)
+        expected.push(...rendered)
       }
     }
 
-    for (let ti = 0; ti < templates.length; ti++) {
-      const r = mergeResults.get(ti)
-      if (r) {
-        expected.push(...r.expected)
-      } else {
-        const tmpl = templates[ti]
-        if (tmpl.kind === 'text') {
-          expected.push(`${indent}- text: ${formatTextValue(tmpl.text)}`)
-        } else {
-          const tmplLines: string[] = []
-          renderTemplateNodeLines(tmpl, indent, tmplLines)
-          expected.push(...tmplLines)
-        }
-      }
-    }
-
-    return { actual, expected, merged, pass: false }
+    return { actual, expected, pass: false }
   }
 
   // All templates matched (full-depth) — pass is true.
@@ -339,13 +286,12 @@ function mergeChildLists(
       const r = mergeNode(children[ci], templates[ti], indent)
       actual.push(...r.actual)
       expected.push(...r.expected)
-      merged.push(...r.merged)
     } else {
       actual.push(...renderChildLines(children[ci], indent))
     }
   }
 
-  return { actual, expected, merged, pass: true }
+  return { actual, expected, pass: true }
 }
 
 function mergeNode(
@@ -361,18 +307,16 @@ function mergeNode(
       return {
         actual: [patternStr],
         expected: [patternStr],
-        merged: [patternStr],
         pass: true,
       }
     }
     if (matched) {
       const line = `${indent}- text: ${node}`
-      return { actual: [line], expected: [line], merged: [line], pass: true }
+      return { actual: [line], expected: [line], pass: true }
     }
     return {
       actual: [`${indent}- text: ${node}`],
-      expected: [`${indent}- text: ${formatTextValue(template.text)}`],
-      merged: [`${indent}- text: ${node}`],
+      expected: [`${indent}- text: ${node}`],
       pass: false,
     }
   }
@@ -386,16 +330,16 @@ function mergeNode(
             renderNodeLines(node, indent, l)
             return l.join('\n')
           })()
-    return { actual: [actualLine], expected: [], merged: [actualLine], pass: false }
+    return { actual: [actualLine], expected: [actualLine], pass: false }
   }
 
   // Role node — determine the name to show
   let namePass = true
-  let mergedName: AriaRegex | string = node.name
+  let expectedName: AriaRegex | string = node.name
   if (template.name !== undefined) {
     if (isRegexName(template.name)) {
       if (matchesStringOrRegex(node.name, template.name)) {
-        mergedName = template.name
+        expectedName = template.name
       } else {
         namePass = false
       }
@@ -427,11 +371,10 @@ function mergeNode(
     namePass && isRegexName(template.name)
       ? renderActualKeyWithName(node, template.name)
       : createAriaKey(node)
-  const expectedKey = renderTemplateKey(template)
-  const mergedKey =
-    mergedName === node.name
+  const expectedKey =
+    expectedName === node.name
       ? createAriaKey(node)
-      : renderActualKeyWithName(node, mergedName)
+      : renderActualKeyWithName(node, expectedName)
 
   // Recurse into children
   const childResult = mergeChildLists(
@@ -443,7 +386,6 @@ function mergeNode(
   // Build pseudo-child lines for props
   const actualPseudo: string[] = []
   const expectedPseudo: string[] = []
-  const mergedPseudo: string[] = []
 
   const allPropKeys = new Set([
     ...Object.keys(node.props),
@@ -464,13 +406,10 @@ function mergeNode(
             : nodeVal
         actualPseudo.push(`${indent}  - /${prop}: ${actualDisplay}`)
       }
-      if (tmplVal !== undefined) {
-        expectedPseudo.push(`${indent}  - /${prop}: ${formatTextValue(tmplVal)}`)
-      }
       if (nodeVal !== undefined) {
-        const mergedDisplay =
+        const expectedDisplay =
           matched && tmplVal !== undefined ? formatTextValue(tmplVal) : nodeVal
-        mergedPseudo.push(`${indent}  - /${prop}: ${mergedDisplay}`)
+        expectedPseudo.push(`${indent}  - /${prop}: ${expectedDisplay}`)
       }
     }
   }
@@ -479,12 +418,10 @@ function mergeNode(
 
   const actual: string[] = []
   const expected: string[] = []
-  const merged: string[] = []
 
   const hasActualChildren = childResult.actual.length > 0 || actualPseudo.length > 0
   const hasExpectedChildren =
     childResult.expected.length > 0 || expectedPseudo.length > 0
-  const hasMergedChildren = childResult.merged.length > 0 || mergedPseudo.length > 0
 
   if (!hasActualChildren) {
     actual.push(`${indent}- ${actualKey}`)
@@ -516,20 +453,5 @@ function mergeNode(
     expected.push(...expectedPseudo)
   }
 
-  if (!hasMergedChildren) {
-    merged.push(`${indent}- ${mergedKey}`)
-  } else if (
-    childResult.merged.length === 1 &&
-    !mergedPseudo.length &&
-    childResult.merged[0].trimStart().startsWith('- text: ')
-  ) {
-    const text = childResult.merged[0].trimStart().slice('- text: '.length)
-    merged.push(`${indent}- ${mergedKey}: ${text}`)
-  } else {
-    merged.push(`${indent}- ${mergedKey}:`)
-    merged.push(...childResult.merged)
-    merged.push(...mergedPseudo)
-  }
-
-  return { actual, expected, merged, pass }
+  return { actual, expected, pass }
 }
