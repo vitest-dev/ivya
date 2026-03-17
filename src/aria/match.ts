@@ -1,19 +1,13 @@
-import {
-  renderNodeLines,
-  createAriaKey,
-  renderAriaProps,
-} from './folk/injected/ariaSnapshot'
+import { renderNodeLines } from './folk/injected/ariaSnapshot'
 import {
   matchesNode,
   matchesTextValue,
   matchesStringOrRegex,
   cachedRegex,
-} from './folk/isomorphic/ariaSnapshot'
-import type {
-  AriaNode,
-  AriaRegex,
-  AriaTemplateNode,
-  AriaTemplateRoleNode,
+  type AriaNode,
+  type AriaRegex,
+  type AriaTemplateNode,
+  type AriaTemplateRoleNode,
 } from './folk/isomorphic/ariaSnapshot'
 import { formatTextValue, formatNameValue } from './template'
 
@@ -144,16 +138,6 @@ interface MergeLines {
 
 function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
-}
-
-function renderKeyWithName(
-  node: AriaNode,
-  nameOverride: AriaRegex | string
-): string {
-  let key = node.role
-  if (nameOverride) key += ` ${formatNameValue(nameOverride)}`
-  key += renderAriaProps(node)
-  return key
 }
 
 /** Build the resolved key through the template's lens:

@@ -1,5 +1,9 @@
 {
+  "exclude": ["vendor"],
   "compilerOptions": {
+    "noUnusedLocals": true,
+    // TODO
+    // "noUnusedParameters": true,
     "verbatimModuleSyntax": true,
     "target": "ESNext",
     "lib": ["esnext", "dom", "DOM.Iterable"],
