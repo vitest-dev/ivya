@@ -76,47 +76,39 @@ import { formatTextValue, formatNameValue } from './template'
 // ---------------------------------------------------------------------------
 
 /**
- * The match algorithm produces two resolved views:
+ * The match algorithm resolves a DOM tree through the template's lens:
  *
- *   actual   — DOM tree rendered through the template's lens (regexes
- *              adopted, names omitted where template omits them).
- *   expected — template filled in with actual DOM values. This is
- *              what gets written on --update.
+ *   resolved — DOM tree rendered through the template's lens. Where the
+ *              template uses regexes or omits names, the resolved output
+ *              adopts those patterns. Where the template doesn't match,
+ *              the resolved output uses literal DOM values.
  *
- * These are NOT raw renderings of the inputs:
- *   rawActual   = renderAriaTree(root)
- *   rawExpected = the original YAML template string before parsing
+ * This is NOT a raw rendering of either input:
+ *   actual   = renderAriaTree(root)       — DOM as-is
+ *   expected = the original YAML string   — template as-is
  * Both are independent of the match algorithm and available to the
  * caller without matchAriaTree.
  *
- * Invariants:
- *   pass: true ⟺ actual === expected
- *                   More precisely:
- *                   rawActual ⋟ actual === expected === rawExpected
- *                   Only the actual side loses specificity (adopting
- *                   template patterns like regexes, omitted names).
- *                   The expected side is unchanged — the template as
- *                   written is already correct when it passes.
- *                   TODO:
- *                   currently we actually don't have `expected === rawExpected` invariant,
- *                   but this is likely a bug. However this case doesn't affect users
- *                   since `pass: true` doesn't cause error diff nor new snapshot.
- *   pass: false ⟹ rawActual ⋟ actual != expected
- *                   paired children are normalized
- *                   through the template's lens, e.g. regex name adopted;
- *                   unpaired children are rendered raw). When no children
- *                   can be paired at all, rawActual = actual.
- *                   expected is written on --update.
+ * Invariant:
+ *   pass = true <=> resolved = expected
+ *                   TODO: right? but this isn't actually true yet and
+ *                   we only have one direction
+ *                     pass = true <= resolved = expected
+ *                   or equivalently
+ *                     pass = false => resolved != expected
+ *                   This shouldn't affect user facing behavior since
+ *                   when pass = true, it won't show error diff nor create new snapshot.
  *
  * Diff display (pass: false):
- *   Use actual vs rawExpected. The user wants to see their original
- *   assertion on the right side, not the resolved version. The left
- *   side (actual) normalizes matched regions so the diff highlights
- *   only genuine mismatches, not pattern-vs-literal noise.
+ *   Use resolved vs expected. The user sees their original assertion
+ *   on the right side. The left side (resolved) normalizes matched
+ *   regions so the diff highlights only genuine mismatches, not
+ *   pattern-vs-literal noise.
  *
  * Snapshot update (pass: false):
- *   Write expected. It preserves user patterns (regexes, omitted names)
- *   while incorporating actual DOM structure.
+ *   Write resolved. It preserves user patterns (regexes, omitted names)
+ *   from matched regions while incorporating actual DOM structure for
+ *   mismatched/unpaired regions.
  *
  * Round-trip invariant:
  *   element → captureAriaTree → renderAriaTree → parseAriaTemplate
@@ -127,22 +119,20 @@ import { formatTextValue, formatNameValue } from './template'
 export interface MatchAriaResult {
   /** Whether the actual tree satisfies the template. */
   pass: boolean
-  /** DOM tree resolved through the template's lens. For diff left side. */
-  actual: string
-  /** Template resolved with actual values. Written on --update. */
-  expected: string
+  /** DOM tree resolved through the template's lens. Written on --update. */
+  resolved: string
 }
 
 export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
+  // TODO: should recurse from mergeNode?
   const result = mergeChildLists([root], [template], '')
 
   return {
     pass: result.pass,
-    actual: result.actual.join('\n'),
-    expected: result.expected.join('\n'),
+    resolved: result.resolved.join('\n'),
   }
 }
 
@@ -151,8 +141,7 @@ export function matchAriaTree(
 // ---------------------------------------------------------------------------
 
 interface MergeLines {
-  actual: string[]
-  expected: string[]
+  resolved: string[]
   pass: boolean
 }
 
@@ -160,9 +149,7 @@ function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
 }
 
-// --- Actual-side key with name override (for regex-transparent diffing) ---
-
-function renderActualKeyWithName(
+function renderKeyWithName(
   node: AriaNode,
   nameOverride: AriaRegex | string
 ): string {
@@ -238,8 +225,7 @@ function mergeChildLists(
     t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
   )
 
-  const actual: string[] = []
-  const expected: string[] = []
+  const resolved: string[] = []
 
   // we allow matching as subset so it can pass with
   // children.length >= templates.length === pairs.size
@@ -257,17 +243,14 @@ function mergeChildLists(
       if (ti !== undefined) {
         // recursively merge for matched pairs to preserve template pattern on matched branches.
         const r = mergeNode(children[ci], templates[ti], indent)
-        actual.push(...r.actual)
-        expected.push(...r.expected)
+        resolved.push(...r.resolved)
       } else {
         // on unpaired child branch, we fully update with actual dom render.
-        const rendered = renderChildLines(children[ci], indent)
-        actual.push(...rendered)
-        expected.push(...rendered)
+        resolved.push(...renderChildLines(children[ci], indent))
       }
     }
 
-    return { actual, expected, pass: false }
+    return { resolved, pass: false }
   }
 
   // All templates matched (full-depth) — pass is true.
@@ -276,15 +259,13 @@ function mergeChildLists(
     const ti = pairs.get(ci)
     if (ti !== undefined) {
       const r = mergeNode(children[ci], templates[ti], indent)
-      actual.push(...r.actual)
-      expected.push(...r.expected)
+      resolved.push(...r.resolved)
     } else {
-      // TODO: this is likely "wrong". revisit from invariant principle above.
-      actual.push(...renderChildLines(children[ci], indent))
+      resolved.push(...renderChildLines(children[ci], indent))
     }
   }
 
-  return { actual, expected, pass: true }
+  return { resolved, pass: true }
 }
 
 // TODO: refactor `indent: string` into `depth: number` and `pad(depth, string)` utils.
@@ -296,22 +277,14 @@ function mergeNode(
   // Text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
-    if (matched) {
-      const mergedText = cachedRegex(template.text)
-        ? formatTextValue(template.text)
-        : node
-      const line = `${indent}- text: ${mergedText}`
-      return { actual: [line], expected: [line], pass: true }
-    }
-    return {
-      actual: [`${indent}- text: ${node}`],
-      expected: [`${indent}- text: ${node}`],
-      pass: false,
-    }
+    const resolvedText =
+      matched && cachedRegex(template.text) ? formatTextValue(template.text) : node
+    const line = `${indent}- text: ${resolvedText}`
+    return { resolved: [line], pass: matched }
   }
 
   if (typeof node === 'string' || template.kind === 'text') {
-    const actualLine =
+    const line =
       typeof node === 'string'
         ? `${indent}- text: ${node}`
         : (() => {
@@ -319,7 +292,7 @@ function mergeNode(
             renderNodeLines(node, indent, l)
             return l.join('\n')
           })()
-    return { actual: [actualLine], expected: [actualLine], pass: false }
+    return { resolved: [line], pass: false }
   }
 
   const attrPass =
@@ -341,22 +314,13 @@ function mergeNode(
   }
 
   // Match role (e.g. `- heading`)
-  const expectedName = template.name
-  let namePass = matchesStringOrRegex(node.name, expectedName)
+  let namePass = matchesStringOrRegex(node.name, template.name)
 
-  // Match key lines (e.g. `- heading "Hello" [level=1]`)
-  // TODO: "actual" feels wrong here too. It should adopted through "template" pattern lens.
-
-  // actual: adopts regex from template when matched, otherwise literal
-  const actualKey =
+  // Resolved key: adopts regex from template when matched, otherwise literal
+  const resolvedKey =
     namePass && isRegexName(template.name)
-      ? renderActualKeyWithName(node, template.name)
+      ? renderKeyWithName(node, template.name)
       : createAriaKey(node)
-  // expected: preserves template's name exactly (including omission)
-  const expectedKey =
-    expectedName !== undefined
-      ? renderActualKeyWithName(node, expectedName)
-      : `${node.role}${renderAriaProps(node)}`
 
   // Recurse into children
   const childResult = mergeChildLists(
@@ -366,8 +330,7 @@ function mergeNode(
   )
 
   // Build pseudo-child lines for props
-  const actualPseudo: string[] = []
-  const expectedPseudo: string[] = []
+  const resolvedPseudo: string[] = []
 
   const allPropKeys = new Set([
     ...Object.keys(node.props),
@@ -377,63 +340,36 @@ function mergeNode(
   for (const prop of allPropKeys) {
     const nodeVal = node.props[prop]
     const tmplVal = template.props?.[prop]
-    if (nodeVal !== undefined || tmplVal !== undefined) {
-      const matched =
-        tmplVal === undefined || matchesTextValue(nodeVal || '', tmplVal)
-
-      if (nodeVal !== undefined) {
-        const actualDisplay =
-          matched && tmplVal && cachedRegex(tmplVal)
-            ? formatTextValue(tmplVal)
-            : nodeVal
-        actualPseudo.push(`${indent}  - /${prop}: ${actualDisplay}`)
-      }
-      if (nodeVal !== undefined) {
-        const expectedDisplay =
-          matched && tmplVal !== undefined ? formatTextValue(tmplVal) : nodeVal
-        expectedPseudo.push(`${indent}  - /${prop}: ${expectedDisplay}`)
-      }
+    if (nodeVal !== undefined) {
+      const matched = tmplVal === undefined || matchesTextValue(nodeVal, tmplVal)
+      const display =
+        matched && tmplVal && cachedRegex(tmplVal)
+          ? formatTextValue(tmplVal)
+          : nodeVal
+      resolvedPseudo.push(`${indent}  - /${prop}: ${display}`)
     }
   }
 
   const pass = namePass && attrPass && propsPass && childResult.pass
 
-  const actual: string[] = []
-  const expected: string[] = []
+  const resolved: string[] = []
 
-  const hasActualChildren = childResult.actual.length > 0 || actualPseudo.length > 0
-  const hasExpectedChildren =
-    childResult.expected.length > 0 || expectedPseudo.length > 0
+  const hasChildren = childResult.resolved.length > 0 || resolvedPseudo.length > 0
 
-  if (!hasActualChildren) {
-    actual.push(`${indent}- ${actualKey}`)
+  if (!hasChildren) {
+    resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
-    childResult.actual.length === 1 &&
-    !actualPseudo.length &&
-    childResult.actual[0].trimStart().startsWith('- text: ')
+    childResult.resolved.length === 1 &&
+    !resolvedPseudo.length &&
+    childResult.resolved[0].trimStart().startsWith('- text: ')
   ) {
-    const text = childResult.actual[0].trimStart().slice('- text: '.length)
-    actual.push(`${indent}- ${actualKey}: ${text}`)
+    const text = childResult.resolved[0].trimStart().slice('- text: '.length)
+    resolved.push(`${indent}- ${resolvedKey}: ${text}`)
   } else {
-    actual.push(`${indent}- ${actualKey}:`)
-    actual.push(...childResult.actual)
-    actual.push(...actualPseudo)
+    resolved.push(`${indent}- ${resolvedKey}:`)
+    resolved.push(...childResult.resolved)
+    resolved.push(...resolvedPseudo)
   }
 
-  if (!hasExpectedChildren) {
-    expected.push(`${indent}- ${expectedKey}`)
-  } else if (
-    childResult.expected.length === 1 &&
-    !expectedPseudo.length &&
-    childResult.expected[0].trimStart().startsWith('- text: ')
-  ) {
-    const text = childResult.expected[0].trimStart().slice('- text: '.length)
-    expected.push(`${indent}- ${expectedKey}: ${text}`)
-  } else {
-    expected.push(`${indent}- ${expectedKey}:`)
-    expected.push(...childResult.expected)
-    expected.push(...expectedPseudo)
-  }
-
-  return { actual, expected, pass }
+  return { resolved, pass }
 }
