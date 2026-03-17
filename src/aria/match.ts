@@ -260,8 +260,6 @@ function mergeChildLists(
     if (ti !== undefined) {
       const r = mergeNode(children[ci], templates[ti], indent)
       resolved.push(...r.resolved)
-    } else {
-      resolved.push(...renderChildLines(children[ci], indent))
     }
   }
 

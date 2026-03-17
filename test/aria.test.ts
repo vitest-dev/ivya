@@ -2785,7 +2785,6 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - heading [level=1]
-      - paragraph: Body text
       - button
       ",
         "expected": "
@@ -2824,8 +2823,6 @@ describe('matchAriaTree', () => {
         "actualResolved": "
       - list:
         - listitem: One
-        - listitem: Two
-        - listitem: Three
       ",
         "expected": "
       - list:
@@ -2861,9 +2858,7 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - list:
-        - listitem: One
         - listitem: Two
-        - listitem: Three
       ",
         "expected": "
       - list:
@@ -2901,7 +2896,6 @@ describe('matchAriaTree', () => {
         "actualResolved": "
       - list:
         - listitem: A
-        - listitem: B
         - listitem: C
       ",
         "expected": "
@@ -3028,7 +3022,6 @@ describe('matchAriaTree', () => {
         "actualResolved": "
       - list:
         - listitem: A
-        - listitem: B
       - list:
         - listitem: X
         - listitem: "Y"
@@ -3925,8 +3918,6 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - link:
-        - strong: Click
-        - text: here
         - /url: /.*example.com/
       ",
         "expected": "
@@ -4053,8 +4044,6 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - link:
-        - strong: Click
-        - text: here
         - /url: https://example.com
       ",
         "expected": "
