@@ -241,8 +241,10 @@ function mergeChildLists(
   const actual: string[] = []
   const expected: string[] = []
 
+  // we allow matching as subset so it can pass with
+  // children.length >= templates.length === pairs.size
   const pairs = pairChildren(children, templates)
-  const allTemplatesMatched = pairs.size === templates.length
+  const allTemplatesMatched = templates.length === pairs.size
 
   if (!allTemplatesMatched) {
     // Pass 2: O(C × T) unordered exact match to recover pairs that
@@ -253,10 +255,12 @@ function mergeChildLists(
     for (let ci = 0; ci < children.length; ci++) {
       const ti = recoveredPairs.get(ci)
       if (ti !== undefined) {
+        // recursively merge for matched pairs to preserve template pattern on matched branches.
         const r = mergeNode(children[ci], templates[ti], indent)
         actual.push(...r.actual)
         expected.push(...r.expected)
       } else {
+        // on unpaired child branch, we fully update with actual dom render.
         const rendered = renderChildLines(children[ci], indent)
         actual.push(...rendered)
         expected.push(...rendered)
@@ -275,6 +279,7 @@ function mergeChildLists(
       actual.push(...r.actual)
       expected.push(...r.expected)
     } else {
+      // TODO: this is likely "wrong". revisit from invariant principle above.
       actual.push(...renderChildLines(children[ci], indent))
     }
   }
@@ -282,6 +287,7 @@ function mergeChildLists(
   return { actual, expected, pass: true }
 }
 
+// TODO: refactor `indent: string` into `depth: number` and `pad(depth, string)` utils.
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,

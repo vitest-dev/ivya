@@ -2651,7 +2651,7 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  test('exact match', () => {
+  test('match heading level', () => {
     // TODO: expected === rawExpected invariant on pass = true?
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
