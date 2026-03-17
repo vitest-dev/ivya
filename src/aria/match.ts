@@ -2,7 +2,6 @@ import {
   renderNodeLines,
   createAriaKey,
   renderAriaProps,
-  renderAriaTree,
 } from './folk/injected/ariaSnapshot'
 import {
   matchesNode,
@@ -269,7 +268,6 @@ function mergeChildLists(
   return { resolved, pass: true }
 }
 
-// TODO: refactor `indent: string` into `depth: number` and `pad(depth, string)` utils.
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
