@@ -3240,6 +3240,40 @@ describe('matchAriaTree', () => {
     `)
   })
 
+  // Unordered pass 2 preserves both regexes even when template order
+  // is reversed from DOM order. Ordered two-pointer would lose the
+  // second regex because startCi advances past it.
+  test('reversed template order preserves both regexes', () => {
+    expect(
+      match(
+        `
+      <button aria-label="user-123">Edit</button>
+      <button aria-label="item-456">Click</button>
+    `,
+        `
+      - button /item-\\d+/: Click
+      - button /user-\\d+/: Edit
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - button /user-\\d+/: Edit
+      - button /item-\\d+/: Click
+      ",
+        "expected": "
+      - button /user-\\d+/: Edit
+      - button /item-\\d+/: Click
+      ",
+        "pass": false,
+        "rawExpected": "
+      - button /item-\\d+/: Click
+      - button /user-\\d+/: Edit
+      ",
+      }
+    `)
+  })
+
   test('mismatch tag and regex match', () => {
     expect(
       match(
