@@ -33,7 +33,6 @@ const match = vi.defineHelper(
     const actual = renderAriaTree(tree)
     const expected = renderAriaTemplate(templateTree)
     if (options?.assertInvariant !== false) {
-      // TODO: not invariant yet
       if (r.pass) {
         expect(r.resolved, `when pass=true, resolved should equal expected`).toBe(
           expected
@@ -3700,8 +3699,7 @@ describe('matchAriaTree', () => {
       - heading "title 2" [level=1]
       ",
         "actualResolved": "
-      - heading "title" [level=1]
-      - heading "title 2" [level=1]
+      - heading "title"
       ",
         "expected": "
       - heading "title"
@@ -4141,11 +4139,13 @@ describe('aria-expanded', () => {
   // TODO: `expected` should preserve [expanded=false] from the template
   // when pass is true. Currently lost because mergedKey goes through
   // createAriaKey/renderAriaProps which omits expanded=false.
+  // This is the only case that breaks invariant.
   test('expanded=false is preserved in merge when template asserts it', () => {
     expect(
       match(
         '<button aria-expanded="false">Menu</button>',
-        '- button "Menu" [expanded=false]'
+        '- button "Menu" [expanded=false]',
+        { assertInvariant: false }
       )
     ).toMatchInlineSnapshot(`
       {
@@ -4153,7 +4153,7 @@ describe('aria-expanded', () => {
       - button "Menu"
       ",
         "actualResolved": "
-      - button "Menu"
+      - button "Menu" [expanded=false]
       ",
         "expected": "
       - button "Menu"
@@ -4164,8 +4164,11 @@ describe('aria-expanded', () => {
   })
 
   test('expanded=false vs expanded=undefined is a mismatch', () => {
-    expect(match('<button>Menu</button>', '- button "Menu" [expanded=false]'))
-      .toMatchInlineSnapshot(`
+    expect(
+      match('<button>Menu</button>', '- button "Menu" [expanded=false]', {
+        assertInvariant: false,
+      })
+    ).toMatchInlineSnapshot(`
         {
           "actual": "
         - button "Menu"

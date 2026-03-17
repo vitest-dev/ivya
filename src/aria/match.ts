@@ -13,6 +13,7 @@ import type {
   AriaNode,
   AriaRegex,
   AriaTemplateNode,
+  AriaTemplateRoleNode,
 } from './folk/isomorphic/ariaSnapshot'
 import { formatTextValue, formatNameValue } from './template'
 
@@ -91,13 +92,9 @@ import { formatTextValue, formatNameValue } from './template'
  *
  * Invariant:
  *   pass = true <=> resolved = expected
- *                   TODO: right? but this doesn't hold yet.
- *                   we only have one direction
- *                     pass = true <= resolved = expected
- *                   or equivalently
- *                     pass = false => resolved != expected
- *                   This shouldn't affect user facing behavior since
- *                   when pass = true, it won't show error diff nor create new snapshot.
+ *                   TODO:
+ *                   This holds all cases except `aria-expanded` tri-state behaviors,
+ *                   which we inherited from playwright. We leave this case for now.
  *
  * Diff display (pass: false):
  *   Use resolved vs expected. The user sees their original assertion
@@ -156,6 +153,49 @@ function renderKeyWithName(
   let key = node.role
   if (nameOverride) key += ` ${formatNameValue(nameOverride)}`
   key += renderAriaProps(node)
+  return key
+}
+
+/** Build the resolved key through the template's lens:
+ *  only include name/attributes that the template mentions. */
+function renderResolvedKey(node: AriaNode, template: AriaTemplateRoleNode): string {
+  let key = node.role as string
+
+  // Name: omit if template omits, adopt regex if matched, literal otherwise
+  if (template.name === undefined) {
+    // template doesn't care about name → omit
+  } else if (
+    isRegexName(template.name) &&
+    matchesStringOrRegex(node.name, template.name)
+  ) {
+    key += ` ${formatNameValue(template.name)}`
+  } else {
+    if (node.name) {
+      key += ` ${JSON.stringify(node.name)}`
+    }
+  }
+
+  // Attributes: only render what the template mentions
+  if (template.level !== undefined) key += ` [level=${node.level}]`
+  if (template.checked !== undefined) {
+    if (node.checked === true) key += ' [checked]'
+    else if (node.checked === 'mixed') key += ' [checked=mixed]'
+  }
+  if (template.disabled !== undefined && node.disabled) {
+    key += ' [disabled]'
+  }
+  if (template.expanded !== undefined) {
+    if (node.expanded === true) key += ' [expanded]'
+    else if (node.expanded === false) key += ' [expanded=false]'
+  }
+  if (template.pressed !== undefined) {
+    if (node.pressed === true) key += ' [pressed]'
+    else if (node.pressed === 'mixed') key += ' [pressed=mixed]'
+  }
+  if (template.selected !== undefined && node.selected) {
+    key += ' [selected]'
+  }
+
   return key
 }
 
@@ -290,18 +330,13 @@ function mergeNode(
   let namePass = matchesStringOrRegex(node.name, template.name)
 
   // Resolved key (e.g. `- heading "Hello" [level=1]`):
-  // adopt the template's lens for the name.
-  //   template omits name (e.g. `- heading`)       → resolved omits it
+  // adopt the template's lens for both name and attributes.
+  //   template omits name (e.g. `- heading`)        → resolved omits it
   //   template has regex  (e.g. `- button /\d+/`)   → resolved adopts regex if matched
   //   template has literal (e.g. `- button "Save"`) → resolved uses literal
-  let resolvedKey: string
-  if (template.name === undefined) {
-    resolvedKey = `${node.role}${renderAriaProps(node)}`
-  } else if (namePass && isRegexName(template.name)) {
-    resolvedKey = renderKeyWithName(node, template.name)
-  } else {
-    resolvedKey = createAriaKey(node)
-  }
+  //   template omits attr (e.g. no [level])          → resolved omits it
+  //   template has attr   (e.g. [level=1])           → resolved includes it
+  const resolvedKey = renderResolvedKey(node, template)
 
   // Recurse into children — if template omits children, the lens says
   // "don't care", so we skip (don't render children in resolved output).
