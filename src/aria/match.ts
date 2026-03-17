@@ -275,7 +275,7 @@ function mergeNode(
   template: AriaTemplateNode,
   indent: string
 ): MergeLines {
-  // Text node
+  // Both text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
     const resolvedText =
@@ -284,17 +284,10 @@ function mergeNode(
     return { resolved: [line], pass: matched }
   }
 
+  // One text node and the other not
   if (typeof node === 'string' || template.kind === 'text') {
-    // TODO: basically renderAriaNode(node) with indent?
-    const line =
-      typeof node === 'string'
-        ? `${indent}- text: ${node}`
-        : (() => {
-            const l: string[] = []
-            renderNodeLines(node, indent, l)
-            return l.join('\n')
-          })()
-    return { resolved: [line], pass: false }
+    const resolved = renderChildLines(node, indent)
+    return { resolved, pass: false }
   }
 
   // Match role name, e.g. `- role`
