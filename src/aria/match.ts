@@ -248,10 +248,10 @@ function mergeChildLists(
     // Pass 2: O(C × T) unordered exact match to recover pairs that
     // pass 1's greedy scan missed. Preserves user patterns (e.g. regexes)
     // in the merge output instead of dumping full actual.
-    const allPairs = pairChildrenFull(children, templates)
+    const recoveredPairs = pairChildrenFull(children, templates)
 
     for (let ci = 0; ci < children.length; ci++) {
-      const ti = allPairs.get(ci)
+      const ti = recoveredPairs.get(ci)
       if (ti !== undefined) {
         const r = mergeNode(children[ci], templates[ti], indent)
         actual.push(...r.actual)

@@ -3176,6 +3176,68 @@ describe('matchAriaTree', () => {
     `)
   })
 
+  test('merge flip 1', () => {
+    expect(
+      match(
+        `
+      <button aria-label="1234">Pattern</button>
+      <p>Changed</p>
+    `,
+        `
+      - paragraph: Original
+      - button /\\d+/: Pattern
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - button /\\d+/: Pattern
+      - paragraph: Changed
+      ",
+        "expected": "
+      - button /\\d+/: Pattern
+      - paragraph: Changed
+      ",
+        "pass": false,
+        "rawExpected": "
+      - paragraph: Original
+      - button /\\d+/: Pattern
+      ",
+      }
+    `)
+  })
+
+  test('merge flip 2', () => {
+    expect(
+      match(
+        `
+      <p>Changed</p>
+      <button aria-label="1234">Pattern</button>
+    `,
+        `
+      - button /\\d+/: Pattern
+      - paragraph: Original
+    `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: Changed
+      - button /\\d+/: Pattern
+      ",
+        "expected": "
+      - paragraph: Changed
+      - button /\\d+/: Pattern
+      ",
+        "pass": false,
+        "rawExpected": "
+      - button /\\d+/: Pattern
+      - paragraph: Original
+      ",
+      }
+    `)
+  })
+
   test('mismatch tag and regex match', () => {
     expect(
       match(
