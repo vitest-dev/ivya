@@ -114,9 +114,9 @@ export interface MatchAriaResult {
   actual: string
   /** Rendered template — for the "expected" side of the diff. */
   expected: string
-  /** ≈ resolvedExpected. Merged snapshot to write on --update:
+  /** Merged snapshot to write on --update:
    *  actual structure with user patterns (regexes, etc.) preserved. */
-  mergedExpected: string
+  resolvedExpected: string
 }
 
 export function matchAriaTree(
@@ -129,7 +129,7 @@ export function matchAriaTree(
     pass: result.pass,
     actual: result.actual.join('\n'),
     expected: result.expected.join('\n'),
-    mergedExpected: result.merged.join('\n'),
+    resolvedExpected: result.merged.join('\n'),
   }
 }
 

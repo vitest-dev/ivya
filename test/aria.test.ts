@@ -30,7 +30,7 @@ function match(html: string, template: string) {
     pass: r.pass,
     actual: `\n${r.actual}\n`,
     expected: `\n${r.expected}\n`,
-    mergedExpected: `\n${r.mergedExpected}\n`,
+    resolvedExpected: `\n${r.resolvedExpected}\n`,
   }
 }
 
@@ -2581,7 +2581,8 @@ describe('matchAriaTree', () => {
             - link "About":
               - /url: /about
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - navigation "Main":
         - list:
           - listitem:
@@ -2591,7 +2592,6 @@ describe('matchAriaTree', () => {
             - link "About":
               - /url: /about
       ",
-        "pass": true,
       }
     `)
   })
@@ -2626,7 +2626,8 @@ describe('matchAriaTree', () => {
       - button "F" [pressed=mixed]
       - option "G" [selected]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - checkbox "A" [checked]
       - button "B" [disabled]
       - button "C" [expanded]
@@ -2635,7 +2636,6 @@ describe('matchAriaTree', () => {
       - button "F" [pressed=mixed]
       - option "G" [selected]
       ",
-        "pass": true,
       }
     `)
   })
@@ -2649,10 +2649,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - heading [level=1]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - heading "Hello" [level=1]
       ",
-        "pass": true,
       }
     `)
   })
@@ -2660,73 +2660,73 @@ describe('matchAriaTree', () => {
   test('name match', () => {
     expect(match('<button aria-label="Submit">Go</button>', '- button "Submit"'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button "Submit": Go
-      ",
-        "expected": "
-      - button "Submit"
-      ",
-        "mergedExpected": "
-      - button "Submit"
-      ",
-        "pass": true,
-      }
-    `)
+        {
+          "actual": "
+        - button "Submit": Go
+        ",
+          "expected": "
+        - button "Submit"
+        ",
+          "pass": true,
+          "resolvedExpected": "
+        - button "Submit"
+        ",
+        }
+      `)
   })
 
   test('name mismatch', () => {
     expect(match('<button aria-label="Submit">Go</button>', '- button "Cancel"'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button "Submit": Go
-      ",
-        "expected": "
-      - button "Cancel"
-      ",
-        "mergedExpected": "
-      - button "Submit": Go
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - button "Submit": Go
+        ",
+          "expected": "
+        - button "Cancel"
+        ",
+          "pass": false,
+          "resolvedExpected": "
+        - button "Submit": Go
+        ",
+        }
+      `)
   })
 
   test('regex name match', () => {
     expect(match('<button aria-label="User 42">Go</button>', '- button /User \\d+/'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button /User \\d+/: Go
-      ",
-        "expected": "
-      - button /User \\d+/
-      ",
-        "mergedExpected": "
-      - button /User \\d+/
-      ",
-        "pass": true,
-      }
-    `)
+        {
+          "actual": "
+        - button /User \\d+/: Go
+        ",
+          "expected": "
+        - button /User \\d+/
+        ",
+          "pass": true,
+          "resolvedExpected": "
+        - button /User \\d+/
+        ",
+        }
+      `)
   })
 
   test('regex name mismatch', () => {
     expect(match('<button aria-label="User 42">Go</button>', '- button /Goodbye/'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button "User 42": Go
-      ",
-        "expected": "
-      - button /Goodbye/
-      ",
-        "mergedExpected": "
-      - button "User 42": Go
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - button "User 42": Go
+        ",
+          "expected": "
+        - button /Goodbye/
+        ",
+          "pass": false,
+          "resolvedExpected": "
+        - button "User 42": Go
+        ",
+        }
+      `)
   })
 
   // Contain semantics: template is a subset of actual children.
@@ -2758,11 +2758,11 @@ describe('matchAriaTree', () => {
       - heading [level=1]
       - button
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - heading "Title" [level=1]
       - button "Submit"
       ",
-        "pass": true,
       }
     `)
   })
@@ -2795,11 +2795,11 @@ describe('matchAriaTree', () => {
       - list:
         - listitem: One
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - list:
         - listitem: One
       ",
-        "pass": true,
       }
     `)
   })
@@ -2831,11 +2831,11 @@ describe('matchAriaTree', () => {
       - list:
         - listitem: Two
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - list:
         - listitem: Two
       ",
-        "pass": true,
       }
     `)
   })
@@ -2869,12 +2869,12 @@ describe('matchAriaTree', () => {
         - listitem: A
         - listitem: C
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - list:
         - listitem: A
         - listitem: C
       ",
-        "pass": true,
       }
     `)
   })
@@ -2901,10 +2901,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - list
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - list
       ",
-        "pass": true,
       }
     `)
   })
@@ -2947,7 +2947,8 @@ describe('matchAriaTree', () => {
           - listitem:
             - button: Home
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - navigation "Main":
         - list:
           - listitem:
@@ -2957,7 +2958,6 @@ describe('matchAriaTree', () => {
           - listitem:
             - button "Contact"
       ",
-        "pass": false,
       }
     `)
   })
@@ -2996,14 +2996,14 @@ describe('matchAriaTree', () => {
       - list:
         - listitem: WRONG
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - list:
         - listitem: A
       - list:
         - listitem: X
         - listitem: "Y"
       ",
-        "pass": false,
       }
     `)
   })
@@ -3022,10 +3022,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - checkbox "A" [checked]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - checkbox "A" [checked]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3039,10 +3039,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - heading [level=1]
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - heading "Title" [level=2]
       ",
-        "pass": false,
       }
     `)
   })
@@ -3056,10 +3056,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - link
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - button "Click"
       ",
-        "pass": false,
       }
     `)
   })
@@ -3078,10 +3078,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - paragraph: /You have \\d+ notifications/
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - paragraph: /You have \\d+ notifications/
       ",
-        "pass": true,
       }
     `)
   })
@@ -3096,10 +3096,10 @@ describe('matchAriaTree', () => {
           "expected": "
         - paragraph: /\\d+ errors/
         ",
-          "mergedExpected": "
+          "pass": false,
+          "resolvedExpected": "
         - paragraph: You have 7 notifications
         ",
-          "pass": false,
         }
       `)
   })
@@ -3126,11 +3126,11 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       - paragraph: Original
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - button /\\d+/: Pattern
       - paragraph: Changed
       ",
-        "pass": false,
       }
     `)
   })
@@ -3157,11 +3157,11 @@ describe('matchAriaTree', () => {
       - paragraph: Original
       - button /\\d+/: Pattern
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - paragraph: Changed
       - button /\\d+/: Pattern
       ",
-        "pass": false,
       }
     `)
   })
@@ -3188,11 +3188,11 @@ describe('matchAriaTree', () => {
       - paragraph: Original
       - button /\\d+/: Pattern
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - heading "ChangedWithTag" [level=1]
       - button /\\d+/: Pattern
       ",
-        "pass": false,
       }
     `)
   })
@@ -3221,12 +3221,12 @@ describe('matchAriaTree', () => {
       - button /\\d+/: Pattern
       - paragraph: Original
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - text: extra
       - button /\\d+/: Pattern
       - paragraph: Changed
       ",
-        "pass": false,
       }
     `)
   })
@@ -3255,12 +3255,12 @@ describe('matchAriaTree', () => {
       - paragraph: Original
       - button /\\d+/: Pattern
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - paragraph: Changed
       - text: extra
       - button /\\d+/: Pattern
       ",
-        "pass": false,
       }
     `)
   })
@@ -3289,12 +3289,12 @@ describe('matchAriaTree', () => {
       - paragraph: Original
       - button /d+/: Pattern
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - paragraph: Changed
       - button "1234": Pattern
       - text: extra
       ",
-        "pass": false,
       }
     `)
   })
@@ -3321,11 +3321,11 @@ describe('matchAriaTree', () => {
       - button: Cancel
       - paragraph: /w+/
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - button "Submit"
       - button "Cancel"
       ",
-        "pass": false,
       }
     `)
   })
@@ -3342,10 +3342,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - button [disabled]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - button "Click me" [disabled]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3360,10 +3360,10 @@ describe('matchAriaTree', () => {
           "expected": "
         - button [disabled]
         ",
-          "mergedExpected": "
+          "pass": false,
+          "resolvedExpected": "
         - button "Click me"
         ",
-          "pass": false,
         }
       `)
   })
@@ -3380,10 +3380,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - button [expanded]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - button "Toggle" [expanded]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3402,10 +3402,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - button [expanded=false]
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - button "Toggle" [expanded]
       ",
-        "pass": false,
       }
     `)
   })
@@ -3421,10 +3421,10 @@ describe('matchAriaTree', () => {
           "expected": "
         - button [pressed]
         ",
-          "mergedExpected": "
+          "pass": true,
+          "resolvedExpected": "
         - button "Like" [pressed]
         ",
-          "pass": true,
         }
       `)
   })
@@ -3440,10 +3440,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - button [pressed=mixed]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - button "Like" [pressed=mixed]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3458,10 +3458,10 @@ describe('matchAriaTree', () => {
           "expected": "
         - button [pressed]
         ",
-          "mergedExpected": "
+          "pass": false,
+          "resolvedExpected": "
         - button "Like" [pressed=mixed]
         ",
-          "pass": false,
         }
       `)
   })
@@ -3481,10 +3481,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - option [selected]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - option "Row" [selected]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3499,10 +3499,10 @@ describe('matchAriaTree', () => {
           "expected": "
         - option [selected]
         ",
-          "mergedExpected": "
+          "pass": false,
+          "resolvedExpected": "
         - option "Row"
         ",
-          "pass": false,
         }
       `)
   })
@@ -3522,10 +3522,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - checkbox "A" [checked=mixed]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - checkbox "A" [checked=mixed]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3544,10 +3544,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - checkbox "A" [checked]
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - checkbox "A" [checked=mixed]
       ",
-        "pass": false,
       }
     `)
   })
@@ -3577,10 +3577,10 @@ describe('matchAriaTree', () => {
         "expected": "
       - heading "title"
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - heading "title" [level=1]
       ",
-        "pass": true,
       }
     `)
   })
@@ -3627,14 +3627,14 @@ describe('matchAriaTree', () => {
           - listitem:
             - link: Away
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - navigation "Main":
         - list:
           - listitem:
             - link "Home":
               - /url: /a
       ",
-        "pass": false,
       }
     `)
   })
@@ -3659,11 +3659,11 @@ describe('matchAriaTree', () => {
       - link:
         - /url: /.*example.com/
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - link "Link":
         - /url: /.*example.com/
       ",
-        "pass": true,
       }
     `)
   })
@@ -3686,11 +3686,11 @@ describe('matchAriaTree', () => {
       - link:
         - /url: /.*other.com/
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - link "Link":
         - /url: https://example.com
       ",
-        "pass": false,
       }
     `)
   })
@@ -3714,11 +3714,11 @@ describe('matchAriaTree', () => {
       - textbox "Label":
         - /placeholder: Enter name
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - textbox "Label":
         - /placeholder: Enter name
       ",
-        "pass": true,
       }
     `)
   })
@@ -3740,10 +3740,10 @@ describe('matchAriaTree', () => {
       - textbox:
         - /placeholder: Enter name
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - textbox "Enter name"
       ",
-        "pass": false,
       }
     `)
   })
@@ -3765,10 +3765,10 @@ describe('matchAriaTree', () => {
       - textbox:
         - /placeholder: Wrong
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - textbox "Enter name"
       ",
-        "pass": false,
       }
     `)
   })
@@ -3794,11 +3794,11 @@ describe('matchAriaTree', () => {
       - link:
         - /url: /.*example.com/
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - link "Click here":
         - /url: /.*example.com/
       ",
-        "pass": true,
       }
     `)
   })
@@ -3823,13 +3823,13 @@ describe('matchAriaTree', () => {
       - link:
         - /url: /.*other.com/
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
       ",
-        "pass": false,
       }
     `)
   })
@@ -3856,13 +3856,13 @@ describe('matchAriaTree', () => {
         - text: Click here
         - /url: /.*example.com/
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
       ",
-        "pass": false,
       }
     `)
   })
@@ -3889,13 +3889,13 @@ describe('matchAriaTree', () => {
         - text: Wrong text
         - /url: /.*example.com/
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
       ",
-        "pass": false,
       }
     `)
   })
@@ -3920,11 +3920,11 @@ describe('matchAriaTree', () => {
       - link:
         - /url: https://example.com
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
       ",
-        "pass": true,
       }
     `)
   })
@@ -3949,13 +3949,13 @@ describe('matchAriaTree', () => {
       - link:
         - /url: https://other.com
       ",
-        "mergedExpected": "
+        "pass": false,
+        "resolvedExpected": "
       - link "Click here":
         - /url: https://example.com
         - strong: Click
         - text: here
       ",
-        "pass": false,
       }
     `)
   })
@@ -4029,10 +4029,10 @@ describe('aria-expanded', () => {
         "expected": "
       - button "Menu" [expanded=false]
       ",
-        "mergedExpected": "
+        "pass": true,
+        "resolvedExpected": "
       - button "Menu"
       ",
-        "pass": true,
       }
     `)
   })
@@ -4040,18 +4040,18 @@ describe('aria-expanded', () => {
   test('expanded=false vs expanded=undefined is a mismatch', () => {
     expect(match('<button>Menu</button>', '- button "Menu" [expanded=false]'))
       .toMatchInlineSnapshot(`
-      {
-        "actual": "
-      - button "Menu"
-      ",
-        "expected": "
-      - button "Menu" [expanded=false]
-      ",
-        "mergedExpected": "
-      - button "Menu"
-      ",
-        "pass": false,
-      }
-    `)
+        {
+          "actual": "
+        - button "Menu"
+        ",
+          "expected": "
+        - button "Menu" [expanded=false]
+        ",
+          "pass": false,
+          "resolvedExpected": "
+        - button "Menu"
+        ",
+        }
+      `)
   })
 })
