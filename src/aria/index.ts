@@ -12,10 +12,11 @@ import {
 } from './folk/isomorphic/ariaSnapshot'
 
 export type { AriaNode, AriaTemplateNode } from './folk/isomorphic/ariaSnapshot'
-export {
-  generateAriaTree as captureAriaTree,
-  renderAriaTree,
-} from './folk/injected/ariaSnapshot'
+
+export { generateAriaTree, renderAriaTree } from './folk/injected/ariaSnapshot'
+
+export { renderAriaTemplate } from './template'
+
 export { matchAriaTree } from './match'
 
 export function parseAriaTemplate(yamlLib: any, text: string): AriaTemplateNode {

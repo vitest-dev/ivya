@@ -12,9 +12,9 @@ import {
 import type {
   AriaNode,
   AriaRegex,
-  AriaTextValue,
   AriaTemplateNode,
 } from './folk/isomorphic/ariaSnapshot'
+import { formatTextValue, formatNameValue } from './template'
 
 // ---------------------------------------------------------------------------
 // matchAriaTree — three-way merge matching (vitest-specific)
@@ -154,18 +154,6 @@ interface MergeLines {
   actual: string[]
   expected: string[]
   pass: boolean
-}
-
-// --- Format helpers (merge-specific, no folk equivalent) ---
-
-function formatTextValue(tv: AriaTextValue): string {
-  if (cachedRegex(tv)) return `/${tv.raw.slice(1, -1)}/`
-  return tv.normalized
-}
-
-function formatNameValue(name: AriaRegex | string): string {
-  if (typeof name === 'string') return JSON.stringify(name)
-  return `/${name.pattern}/`
 }
 
 function isRegexName(name?: AriaRegex | string): name is AriaRegex {

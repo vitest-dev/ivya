@@ -7,10 +7,11 @@
  */
 
 import {
-  captureAriaTree,
+  generateAriaTree,
   matchAriaTree,
   parseAriaTemplate as parseAriaTemplateOriginal,
   renderAriaTree,
+  renderAriaTemplate,
 } from '../src/aria'
 import { describe, expect, test } from 'vitest'
 import * as yaml from 'yaml'
@@ -21,7 +22,7 @@ function parseAriaTemplate(text: string) {
 
 function capture(html: string) {
   document.body.innerHTML = html
-  return captureAriaTree(document.body)
+  return generateAriaTree(document.body)
 }
 
 function match(html: string, template: string) {
@@ -47,19 +48,27 @@ function stripIndent(text: string) {
   return lines.map((line) => line.slice(indent ?? 0)).join('\n')
 }
 
+// TODO: use vi.defineHelper
 function runPipeline(
   htmlOrElement: string | Element,
-  options?: { expectPass?: boolean }
+  options?: {
+    assertPass?: boolean
+    assertAriaTemplateRoundTrip?: boolean
+  }
 ) {
   const captured =
     typeof htmlOrElement === 'string'
       ? capture(htmlOrElement)
-      : captureAriaTree(htmlOrElement)
+      : generateAriaTree(htmlOrElement)
   const rendered = renderAriaTree(captured)
   const parsed = parseAriaTemplate(rendered)
   const matched = matchAriaTree(captured, parsed)
-  if (options?.expectPass !== false) {
-    expect(matched.pass).toBe(true)
+  if (options?.assertPass !== false) {
+    expect.soft(matched.pass).toBe(true)
+  }
+  if (options?.assertAriaTemplateRoundTrip !== false) {
+    const renderedTemplate = renderAriaTemplate(parsed)
+    expect.soft(renderedTemplate).toBe(rendered)
   }
   return {
     captured,
