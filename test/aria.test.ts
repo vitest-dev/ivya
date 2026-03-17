@@ -26,26 +26,14 @@ function capture(html: string) {
 }
 
 function match(html: string, template: string) {
-  const r = matchAriaTree(capture(html), parseAriaTemplate(template))
+  const templateTree = parseAriaTemplate(template)
+  const r = matchAriaTree(capture(html), templateTree)
   return {
     pass: r.pass,
     actual: `\n${r.actual}\n`,
-    rawExpected: `\n${stripIndent(template).trim()}\n`,
     expected: `\n${r.expected}\n`,
+    rawExpected: `\n${renderAriaTemplate(templateTree)}\n`,
   }
-}
-
-function stripIndent(text: string) {
-  const lines = text.split('\n')
-  const indent = lines.reduce(
-    (min, line) => {
-      if (line.trim() === '') return min
-      const leadingSpaces = line.match(/^ */)?.[0].length ?? 0
-      return min === null ? leadingSpaces : Math.min(min, leadingSpaces)
-    },
-    null as number | null
-  )
-  return lines.map((line) => line.slice(indent ?? 0)).join('\n')
 }
 
 // TODO: use vi.defineHelper
@@ -3427,7 +3415,7 @@ describe('matchAriaTree', () => {
       ",
         "pass": false,
         "rawExpected": "
-      - button [expanded=false]
+      - button
       ",
       }
     `)
@@ -4035,7 +4023,7 @@ describe('aria-expanded', () => {
     `)
   })
 
-  // TODO: mergedExpected should preserve [expanded=false] from the template
+  // TODO: `expected` should preserve [expanded=false] from the template
   // when pass is true. Currently lost because mergedKey goes through
   // createAriaKey/renderAriaProps which omits expanded=false.
   test('expanded=false is preserved in merge when template asserts it', () => {
@@ -4054,7 +4042,7 @@ describe('aria-expanded', () => {
       ",
         "pass": true,
         "rawExpected": "
-      - button "Menu" [expanded=false]
+      - button "Menu"
       ",
       }
     `)
@@ -4072,7 +4060,7 @@ describe('aria-expanded', () => {
         ",
           "pass": false,
           "rawExpected": "
-        - button "Menu" [expanded=false]
+        - button "Menu"
         ",
         }
       `)
