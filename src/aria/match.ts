@@ -315,7 +315,7 @@ function mergeNode(
     }
   }
 
-  if (typeof node === 'string' || template.kind !== 'role') {
+  if (typeof node === 'string' || template.kind === 'text') {
     const actualLine =
       typeof node === 'string'
         ? `${indent}- text: ${node}`
