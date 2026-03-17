@@ -78,17 +78,28 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * Invariants:
- *   pass: true  → actual === expected === mergedExpected.
- *                  Actual is rendered through the template's lens
- *                  (preserving regexes, omitted names) so the diff
- *                  is clean. TODO: not yet achieved — mergeNode
- *                  currently renders actual with literal names even
- *                  when template omits them.
- *   pass: false → mergedExpected is written on --update. It should
- *                  reflect actual DOM structure while preserving user
- *                  intent from the template (regexes, omitted fields).
- *                  actual vs expected shows the human-readable diff.
+ * Conceptually, mergeNode produces four views of each (node, template) pair:
+ *
+ *   actual             — raw DOM rendering, no template influence
+ *   expected           — raw template rendering
+ *   resolvedActual   — actual rendered through template's lens
+ *                        (adopt regexes, omit name where template omits it)
+ *   resolvedExpected — template filled in with actual values
+ *                        (what gets written on --update)
+ *
+ * The canonical invariant: pass ↔ resolvedActual === resolvedExpected.
+ * Both sides normalize toward a common middle; when they meet, the trees
+ * match. When they diverge, the gap shows what changed.
+ *
+ * For vitest integration, the diff should use resolvedActual vs
+ * resolvedExpected — every difference shown is then a difference
+ * that --update will resolve. Using raw actual vs expected would show
+ * false differences (e.g. omitted names) that --update doesn't touch.
+ *
+ * Currently we only expose three fields (actual, expected, mergedExpected)
+ * where mergedExpected ≈ resolvedExpected, and actual is inconsistently
+ * partially resolved. Refactoring to four explicit fields would make the
+ * algorithm's symmetry visible and the invariant checkable.
  *
  * Round-trip invariant:
  *   element → captureAriaTree → renderAriaTree → parseAriaTemplate
@@ -103,8 +114,8 @@ export interface MatchAriaResult {
   actual: string
   /** Rendered template — for the "expected" side of the diff. */
   expected: string
-  /** Merged snapshot to write on --update: actual structure with user
-   *  patterns (regexes, etc.) preserved from the template. */
+  /** ≈ resolvedExpected. Merged snapshot to write on --update:
+   *  actual structure with user patterns (regexes, etc.) preserved. */
   mergedExpected: string
 }
 
