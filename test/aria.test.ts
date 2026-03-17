@@ -36,39 +36,41 @@ function match(html: string, template: string) {
   }
 }
 
-const runPipeline = vi.defineHelper((
-  htmlOrElement: string | Element,
-  options?: {
-    assertPass?: boolean
-    assertAriaTemplateRoundTrip?: boolean
+const runPipeline = vi.defineHelper(
+  (
+    htmlOrElement: string | Element,
+    options?: {
+      assertPass?: boolean
+      assertAriaTemplateRoundTrip?: boolean
+    }
+  ) => {
+    const captured =
+      typeof htmlOrElement === 'string'
+        ? capture(htmlOrElement)
+        : generateAriaTree(htmlOrElement)
+    const rendered = renderAriaTree(captured)
+    const parsed = parseAriaTemplate(rendered)
+    const matched = matchAriaTree(captured, parsed)
+    if (options?.assertPass !== false) {
+      expect.soft(matched.pass, `roundtrip should match`).toBe(true)
+    }
+    if (options?.assertAriaTemplateRoundTrip !== false) {
+      const renderedTemplate = renderAriaTemplate(parsed)
+      expect.soft(renderedTemplate, `template roundtrip should match`).toBe(rendered)
+    }
+    return {
+      captured,
+      rendered,
+      parsed,
+      matched,
+      snapshot: {
+        captured: captured.children,
+        rendered: `\n${rendered}\n`,
+        pass: matched.pass,
+      },
+    }
   }
-) => {
-  const captured =
-    typeof htmlOrElement === 'string'
-      ? capture(htmlOrElement)
-      : generateAriaTree(htmlOrElement)
-  const rendered = renderAriaTree(captured)
-  const parsed = parseAriaTemplate(rendered)
-  const matched = matchAriaTree(captured, parsed)
-  if (options?.assertPass !== false) {
-    expect.soft(matched.pass, `roundtrip should match`).toBe(true)
-  }
-  if (options?.assertAriaTemplateRoundTrip !== false) {
-    const renderedTemplate = renderAriaTemplate(parsed)
-    expect.soft(renderedTemplate, `template roundtrip should match`).toBe(rendered)
-  }
-  return {
-    captured,
-    rendered,
-    parsed,
-    matched,
-    snapshot: {
-      captured: captured.children,
-      rendered: `\n${rendered}\n`,
-      pass: matched.pass,
-    },
-  }
-})
+)
 
 describe('basic', () => {
   test('heading', () => {
