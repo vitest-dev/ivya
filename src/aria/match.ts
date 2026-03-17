@@ -291,18 +291,25 @@ function mergeNode(
   // Match role name, e.g. `- role`
   let namePass = matchesStringOrRegex(node.name, template.name)
 
-  // Resolved key, e.g. `- role "name" [props]`
-  const resolvedKey =
-    namePass && isRegexName(template.name)
-      ? renderKeyWithName(node, template.name)
-      : createAriaKey(node)
+  // Resolved key (e.g. `- heading "Hello" [level=1]`):
+  // adopt the template's lens for the name.
+  //   template omits name (e.g. `- heading`)       → resolved omits it
+  //   template has regex  (e.g. `- button /\d+/`)   → resolved adopts regex if matched
+  //   template has literal (e.g. `- button "Save"`) → resolved uses literal
+  let resolvedKey: string
+  if (template.name === undefined) {
+    resolvedKey = `${node.role}${renderAriaProps(node)}`
+  } else if (namePass && isRegexName(template.name)) {
+    resolvedKey = renderKeyWithName(node, template.name)
+  } else {
+    resolvedKey = createAriaKey(node)
+  }
 
-  // Recurse into children
-  const childResult = mergeChildLists(
-    node.children,
-    template.children || [],
-    `${indent}  `
-  )
+  // Recurse into children — if template omits children, the lens says
+  // "don't care", so we skip (don't render children in resolved output).
+  const childResult = template.children
+    ? mergeChildLists(node.children, template.children, `${indent}  `)
+    : { resolved: [] as string[], pass: true }
 
   // Build pseudo-child lines for props
   const resolvedPseudo: string[] = []

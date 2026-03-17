@@ -2655,7 +2655,6 @@ describe('matchAriaTree', () => {
     `)
   })
 
-  // TODO: resolved === expected invariant on pass = true?
   test('match heading level', () => {
     expect(match('<h1>Hello</h1>', '- heading [level=1]')).toMatchInlineSnapshot(`
       {
@@ -2663,7 +2662,7 @@ describe('matchAriaTree', () => {
       - heading "Hello" [level=1]
       ",
         "actualResolved": "
-      - heading "Hello" [level=1]
+      - heading [level=1]
       ",
         "expected": "
       - heading [level=1]
@@ -2681,7 +2680,7 @@ describe('matchAriaTree', () => {
         - button "Submit": Go
         ",
           "actualResolved": "
-        - button "Submit": Go
+        - button "Submit"
         ",
           "expected": "
         - button "Submit"
@@ -2717,7 +2716,7 @@ describe('matchAriaTree', () => {
         - button "User 42": Go
         ",
           "actualResolved": "
-        - button /User \\d+/: Go
+        - button /User \\d+/
         ",
           "expected": "
         - button /User \\d+/
@@ -2771,9 +2770,9 @@ describe('matchAriaTree', () => {
       - button "Submit"
       ",
         "actualResolved": "
-      - heading "Title" [level=1]
+      - heading [level=1]
       - paragraph: Body text
-      - button "Submit"
+      - button
       ",
         "expected": "
       - heading [level=1]
@@ -2921,9 +2920,7 @@ describe('matchAriaTree', () => {
         - listitem: Two
       ",
         "actualResolved": "
-      - list:
-        - listitem: One
-        - listitem: Two
+      - list
       ",
         "expected": "
       - list
@@ -3461,7 +3458,7 @@ describe('matchAriaTree', () => {
       - button "Click me" [disabled]
       ",
         "actualResolved": "
-      - button "Click me" [disabled]
+      - button [disabled]
       ",
         "expected": "
       - button [disabled]
@@ -3499,7 +3496,7 @@ describe('matchAriaTree', () => {
       - button "Toggle" [expanded]
       ",
         "actualResolved": "
-      - button "Toggle" [expanded]
+      - button [expanded]
       ",
         "expected": "
       - button [expanded]
@@ -3540,7 +3537,7 @@ describe('matchAriaTree', () => {
         - button "Like" [pressed]
         ",
           "actualResolved": "
-        - button "Like" [pressed]
+        - button [pressed]
         ",
           "expected": "
         - button [pressed]
@@ -3559,7 +3556,7 @@ describe('matchAriaTree', () => {
       - button "Like" [pressed=mixed]
       ",
         "actualResolved": "
-      - button "Like" [pressed=mixed]
+      - button [pressed=mixed]
       ",
         "expected": "
       - button [pressed=mixed]
@@ -3600,7 +3597,7 @@ describe('matchAriaTree', () => {
       - option "Row" [selected]
       ",
         "actualResolved": "
-      - option "Row" [selected]
+      - option [selected]
       ",
         "expected": "
       - option [selected]
@@ -3778,7 +3775,7 @@ describe('matchAriaTree', () => {
         - /url: https://example.com
       ",
         "actualResolved": "
-      - link "Link":
+      - link:
         - /url: /.*example.com/
       ",
         "expected": "
@@ -3913,7 +3910,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "actualResolved": "
-      - link "Click here":
+      - link:
         - strong: Click
         - text: here
         - /url: /.*example.com/
@@ -4041,7 +4038,7 @@ describe('matchAriaTree', () => {
         - text: here
       ",
         "actualResolved": "
-      - link "Click here":
+      - link:
         - strong: Click
         - text: here
         - /url: https://example.com
