@@ -41,7 +41,7 @@ import { elementMatchesText, elementText, getElementLabels } from './selectorUti
 import type { CSSComplexSelectorList } from './cssParser'
 import { isElementVisible } from './domUtils'
 import {
-  ByRoleOptions,
+  type ByRoleOptions,
   getByAltTextSelector,
   getByLabelSelector,
   getByPlaceholderSelector,

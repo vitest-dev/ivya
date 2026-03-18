@@ -584,7 +584,7 @@ function queryInAriaOwned(element: Element, selector: string): Element[] {
   return result
 }
 
-function getPseudoContent(element: Element, pseudo: '::before' | '::after') {
+export function getPseudoContent(element: Element, pseudo: '::before' | '::after') {
   const cache =
     pseudo === '::before' ? cachePseudoContentBefore : cachePseudoContentAfter
   if (cache?.has(element)) {
@@ -1454,7 +1454,7 @@ export function getAriaLevel(element: Element): number {
   return 0
 }
 
-const kAriaDisabledRoles = [
+export const kAriaDisabledRoles = [
   'application',
   'button',
   'composite',
