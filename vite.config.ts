@@ -2,7 +2,7 @@ import { defineConfig } from 'vite-plus'
 
 export default defineConfig({
   staged: {
-    '*': 'vp check --fix',
+    '*': 'vp fmt',
   },
   pack: {
     entry: ['src/index.ts', 'src/publicUtils.ts', 'src/aria/index.ts'],
@@ -15,6 +15,7 @@ export default defineConfig({
     clean: true,
     dts: true,
   },
+
   fmt: {
     semi: false,
     trailingComma: 'es5',
