@@ -4206,12 +4206,16 @@ describe('/children directive', () => {
     // With true equal semantics this should fail; currently it passes
     // because merge ignores containerMode.
     expect(
-      match(html, `
+      match(
+        html,
+        `
         - list:
           - /children: equal
           - listitem: A
           - listitem: C
-      `, { assertInvariant: false })
+      `,
+        { assertInvariant: false }
+      )
     ).toMatchInlineSnapshot(`
       {
         "actual": "
@@ -4246,12 +4250,16 @@ describe('/children directive', () => {
       </ul>
     `
     expect(
-      match(html, `
+      match(
+        html,
+        `
         - list:
           - /children: deep-equal
           - listitem: A
           - listitem: C
-      `, { assertInvariant: false })
+      `,
+        { assertInvariant: false }
+      )
     ).toMatchInlineSnapshot(`
       {
         "actual": "
@@ -4286,12 +4294,16 @@ describe('/children directive', () => {
       </ul>
     `
     expect(
-      match(html, `
+      match(
+        html,
+        `
         - list:
           - /children: contain
           - listitem: A
           - listitem: C
-      `, { assertInvariant: false })
+      `,
+        { assertInvariant: false }
+      )
     ).toMatchInlineSnapshot(`
       {
         "actual": "
