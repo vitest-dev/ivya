@@ -367,15 +367,15 @@ function mergeNode(
   // In equal/deep-equal mode, omitting children means "must have zero" —
   // render actual children so the diff surfaces the mismatch.
   const effectiveMode = template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
-  const expectsChildren = template.children || effectiveMode !== 'contain'
   let childLines: string[] = []
-  if (expectsChildren) {
-    childLines = mergeChildLists(
+  if (template.children || effectiveMode !== 'contain') {
+    const childrenResult = mergeChildLists(
       node.children,
       template.children || [],
       `${indent}  `,
       effectiveMode
-    ).resolved
+    )
+    childLines = childrenResult.resolved
   }
 
   // Build directive line (/children) rendered before children,
