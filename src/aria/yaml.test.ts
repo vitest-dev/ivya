@@ -31,7 +31,8 @@ describe('LineCounter', () => {
 
   test('multiple lines', () => {
     const lc = new LineCounter()
-    parseDocument('- a\n- b\n- c\n', { lineCounter: lc })
+    const src = `- a\n- b\n- c\n`
+    parseDocument(src, { lineCounter: lc })
     expect(lc.lineStarts).toEqual([0, 4, 8, 12])
     expect(lc.linePos(0)).toEqual({ line: 1, col: 1 })
     expect(lc.linePos(4)).toEqual({ line: 2, col: 1 })
@@ -41,7 +42,8 @@ describe('LineCounter', () => {
 
   test('linePos for various offsets', () => {
     const lc = new LineCounter()
-    parseDocument('- first\n- second\n', { lineCounter: lc })
+    const src = `- first\n- second\n`
+    parseDocument(src, { lineCounter: lc })
     // line 1: offsets 0–7, line 2 starts at 8
     expect(lc.linePos(0)).toEqual({ line: 1, col: 1 })
     expect(lc.linePos(7)).toEqual({ line: 1, col: 8 })
@@ -56,7 +58,11 @@ describe('LineCounter', () => {
 
 describe('sequences', () => {
   test('Example 2.1. Sequence of Scalars', () => {
-    const doc = parseDocument('- Mark McGwire\n- Sammy Sosa\n- Ken Griffey')
+    const doc = parseDocument(`
+      - Mark McGwire
+      - Sammy Sosa
+      - Ken Griffey
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     expect(seq).toBeInstanceOf(YAMLSeq)
@@ -67,7 +73,7 @@ describe('sequences', () => {
   })
 
   test('sequence with \\r\\n line endings', () => {
-    const doc = parseDocument('- a\r\n- b\r\n- c\r\n')
+    const doc = parseDocument(`- a\r\n- b\r\n- c\r\n`)
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     expect(items).toHaveLength(3)
@@ -77,7 +83,10 @@ describe('sequences', () => {
   })
 
   test('sequence of quoted scalars', () => {
-    const doc = parseDocument('- "hello world"\n- "foo \\"bar\\""')
+    const doc = parseDocument(`
+      - "hello world"
+      - "foo \\"bar\\""
+    `)
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     expect((items[0] as Scalar).value).toBe('hello world')
@@ -85,7 +94,12 @@ describe('sequences', () => {
   })
 
   test('sequence with numeric and boolean scalars', () => {
-    const doc = parseDocument('- 42\n- 3.14\n- true\n- false')
+    const doc = parseDocument(`
+      - 42
+      - 3.14
+      - true
+      - false
+    `)
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     expect((items[0] as Scalar).value).toBe(42)
@@ -144,7 +158,10 @@ describe('maps', () => {
   })
 
   test('map with multiple entries (Example 2.2 shape)', () => {
-    const doc = parseDocument('- key1: val1\n  key2: val2')
+    const doc = parseDocument(`
+      - key1: val1
+        key2: val2
+    `)
     expect(doc.errors).toHaveLength(0)
     const map = (doc.contents as YAMLSeq).items[0] as YAMLMap
     expect(map.items).toHaveLength(2)
@@ -170,15 +187,14 @@ describe('maps', () => {
 
 describe('nesting', () => {
   test('Example 2.3. Mapping Scalars to Sequences', () => {
-    const src = [
-      '- american:',
-      '  - Boston Red Sox',
-      '  - Detroit Tigers',
-      '- national:',
-      '  - New York Mets',
-      '  - Chicago Cubs',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - american:
+        - Boston Red Sox
+        - Detroit Tigers
+      - national:
+        - New York Mets
+        - Chicago Cubs
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     expect(seq.items).toHaveLength(2)
@@ -199,17 +215,16 @@ describe('nesting', () => {
   })
 
   test('Example 2.4. Sequence of Mappings', () => {
-    const src = [
-      '-',
-      '  name: Mark McGwire',
-      '  hr: 65',
-      '  avg: 0.278',
-      '-',
-      '  name: Sammy Sosa',
-      '  hr: 63',
-      '  avg: 0.288',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      -
+        name: Mark McGwire
+        hr: 65
+        avg: 0.278
+      -
+        name: Sammy Sosa
+        hr: 63
+        avg: 0.288
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     expect(seq.items).toHaveLength(2)
@@ -228,12 +243,11 @@ describe('nesting', () => {
   })
 
   test('deeply nested sequences and maps', () => {
-    const src = [
-      '- list:',
-      '  - listitem:',
-      '    - link "Home"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - list:
+        - listitem:
+          - link "Home"
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     const outerMap = seq.items[0] as YAMLMap
@@ -246,11 +260,10 @@ describe('nesting', () => {
   })
 
   test('map entry with sequence value containing maps', () => {
-    const src = [
-      '- button "Submit":',
-      '  - text: "Click me"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - button "Submit":
+        - text: "Click me"
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     const map = seq.items[0] as YAMLMap
@@ -262,12 +275,11 @@ describe('nesting', () => {
   })
 
   test('multiple map entries in sequence value', () => {
-    const src = [
-      '- heading "Title":',
-      '  - /children: equal',
-      '  - text: "hello"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - heading "Title":
+        - /children: equal
+        - text: "hello"
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     const map = seq.items[0] as YAMLMap
@@ -325,7 +337,10 @@ describe('scalars', () => {
   })
 
   test('null values', () => {
-    const doc = parseDocument('- null\n- ~')
+    const doc = parseDocument(`
+      - null
+      - ~
+    `)
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     expect((items[0] as Scalar).value).toBeNull()
@@ -352,7 +367,7 @@ describe('scalars', () => {
 describe('ranges', () => {
   test('scalar ranges', () => {
     const lc = new LineCounter()
-    const doc = parseDocument('- hello\n- world', { lineCounter: lc })
+    const doc = parseDocument(`- hello\n- world`, { lineCounter: lc })
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     // "hello" starts at offset 2 (after "- ")
@@ -408,7 +423,7 @@ describe('errors', () => {
   })
 
   test('bad indentation reports error', () => {
-    const doc = parseDocument('- a\n   - b')
+    const doc = parseDocument(`- a\n   - b`)
     expect(doc.errors.length).toBeGreaterThan(0)
   })
 })
@@ -455,15 +470,14 @@ describe('aria template patterns', () => {
   })
 
   test('complex nav tree', () => {
-    const src = [
-      '- navigation "Main":',
-      '  - list:',
-      '    - listitem:',
-      '      - link "Home"',
-      '    - listitem:',
-      '      - link "About"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - navigation "Main":
+        - list:
+          - listitem:
+            - link "Home"
+          - listitem:
+            - link "About"
+    `)
     expect(doc.errors).toHaveLength(0)
     const seq = doc.contents as YAMLSeq
     const nav = seq.items[0] as YAMLMap
@@ -476,12 +490,11 @@ describe('aria template patterns', () => {
   })
 
   test('mixed scalars and maps in sequence', () => {
-    const src = [
-      '- heading "Title"',
-      '- paragraph:',
-      '  - text: "Hello world"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - heading "Title"
+      - paragraph:
+        - text: "Hello world"
+    `)
     expect(doc.errors).toHaveLength(0)
     const items = (doc.contents as YAMLSeq).items
     expect(items).toHaveLength(2)
@@ -490,13 +503,12 @@ describe('aria template patterns', () => {
   })
 
   test('/children containerMode', () => {
-    const src = [
-      '- list:',
-      '  - /children: equal',
-      '  - listitem "one"',
-      '  - listitem "two"',
-    ].join('\n')
-    const doc = parseDocument(src)
+    const doc = parseDocument(`
+      - list:
+        - /children: equal
+        - listitem "one"
+        - listitem "two"
+    `)
     expect(doc.errors).toHaveLength(0)
     const list = (doc.contents as YAMLSeq).items[0] as YAMLMap
     const children = list.items[0].value as YAMLSeq
@@ -573,7 +585,9 @@ describe('aria.test.ts effective coverage', () => {
     const items = seqItems('- paragraph: /You have \\d+ notifications/')
     const map = items[0] as YAMLMap
     expect(map.items[0].key.value).toBe('paragraph')
-    expect((map.items[0].value as Scalar).value).toBe('/You have \\d+ notifications/')
+    expect((map.items[0].value as Scalar).value).toBe(
+      '/You have \\d+ notifications/'
+    )
   })
 
   test('role with regex text child (no name)', () => {
@@ -704,11 +718,11 @@ describe('aria.test.ts effective coverage', () => {
     `)
     const nav = items[0] as YAMLMap
     expect(nav.items[0].key.value).toBe('navigation "Main"')
-    const list = ((nav.items[0].value as YAMLSeq).items[0] as YAMLMap)
+    const list = (nav.items[0].value as YAMLSeq).items[0] as YAMLMap
     expect(list.items[0].key.value).toBe('list')
-    const listitem = ((list.items[0].value as YAMLSeq).items[0] as YAMLMap)
+    const listitem = (list.items[0].value as YAMLSeq).items[0] as YAMLMap
     expect(listitem.items[0].key.value).toBe('listitem')
-    const btn = ((listitem.items[0].value as YAMLSeq).items[0] as YAMLMap)
+    const btn = (listitem.items[0].value as YAMLSeq).items[0] as YAMLMap
     expect(btn.items[0].key.value).toBe('button')
     expect((btn.items[0].value as Scalar).value).toBe('Home')
   })
@@ -727,7 +741,7 @@ describe('aria.test.ts effective coverage', () => {
               - /url: /about
     `)
     const nav = items[0] as YAMLMap
-    const list = ((nav.items[0].value as YAMLSeq).items[0] as YAMLMap)
+    const list = (nav.items[0].value as YAMLSeq).items[0] as YAMLMap
     const listItems = list.items[0].value as YAMLSeq
     expect(listItems.items).toHaveLength(2)
     // First listitem > link "Home" > /url
@@ -844,5 +858,54 @@ describe('aria.test.ts effective coverage', () => {
     const ph = children.items[0] as YAMLMap
     expect(ph.items[0].key.value).toBe('/placeholder')
     expect((ph.items[0].value as Scalar).value).toBe('Enter name')
+  })
+
+  // -- YAML escaping of special characters (renderAriaTree roundtrip) -------
+
+  test('quoted value with escaped quotes', () => {
+    const items = seqItems('- paragraph: "\\"quoted\\""')
+    const map = items[0] as YAMLMap
+    expect((map.items[0].value as Scalar).value).toBe('"quoted"')
+  })
+
+  test('quoted value with hash (comment char)', () => {
+    const items = seqItems('- paragraph: "#comment"')
+    const map = items[0] as YAMLMap
+    expect((map.items[0].value as Scalar).value).toBe('#comment')
+  })
+
+  test('quoted value with @ symbol', () => {
+    const items = seqItems('- paragraph: "@at"')
+    const map = items[0] as YAMLMap
+    expect((map.items[0].value as Scalar).value).toBe('@at')
+  })
+
+  test('quoted value with brackets', () => {
+    const items = seqItems('- paragraph: "[bracket]"')
+    const map = items[0] as YAMLMap
+    expect((map.items[0].value as Scalar).value).toBe('[bracket]')
+  })
+
+  test('all special char values in sequence', () => {
+    const items = seqItems(`
+      - paragraph: "one: two"
+      - paragraph: "\\"quoted\\""
+      - paragraph: "#comment"
+      - paragraph: "@at"
+      - paragraph: "[bracket]"
+      - paragraph: "true"
+      - paragraph: "123"
+    `)
+    expect(items).toHaveLength(7)
+    const values = items.map((i) => ((i as YAMLMap).items[0].value as Scalar).value)
+    expect(values).toEqual([
+      'one: two',
+      '"quoted"',
+      '#comment',
+      '@at',
+      '[bracket]',
+      'true',
+      '123',
+    ])
   })
 })
