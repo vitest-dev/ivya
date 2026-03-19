@@ -3399,7 +3399,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - paragraph: Original
-      - button /d+/: Pattern
+      - button /\\d+/: Pattern
     `
       )
     ).toMatchInlineSnapshot(`
@@ -3411,12 +3411,12 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - paragraph: Changed
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       - text: extra
       ",
         "expected": "
       - paragraph: Original
-      - button /d+/: Pattern
+      - button /\\d+/: Pattern
       ",
         "pass": false,
       }
@@ -3432,7 +3432,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - button: Cancel
-      - paragraph: /w+/
+      - paragraph: /\\w+/
     `
       )
     ).toMatchInlineSnapshot(`
@@ -3447,7 +3447,7 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button: Cancel
-      - paragraph: /w+/
+      - paragraph: /\\w+/
       ",
         "pass": false,
       }
