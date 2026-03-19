@@ -29,11 +29,11 @@
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
+    "prepare": "vp config",
     "dev": "vp pack --watch --sourcemap",
     "build": "vp pack",
     "typecheck": "tsc -b",
-    "test": "vitest",
-    "prepare": "vp config"
+    "test": "vitest"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.1.0",
