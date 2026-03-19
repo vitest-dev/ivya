@@ -9,16 +9,11 @@
 import {
   generateAriaTree,
   matchAriaTree,
-  parseAriaTemplate as parseAriaTemplateOriginal,
+  parseAriaTemplate,
   renderAriaTree,
   renderAriaTemplate,
 } from '../src/aria'
 import { describe, expect, test, vi } from 'vitest'
-import * as yaml from 'yaml'
-
-function parseAriaTemplate(text: string) {
-  return parseAriaTemplateOriginal(yaml, text)
-}
 
 function capture(html: string) {
   document.body.innerHTML = html

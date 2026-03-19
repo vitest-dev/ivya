@@ -184,7 +184,7 @@ export type AriaTemplateRoleNode = AriaProps & {
 
 export type AriaTemplateNode = AriaTemplateRoleNode | AriaTemplateTextNode
 
-import type * as yamlTypes from 'yaml'
+import type * as yamlTypes from '../../yaml'
 
 type YamlLibrary = {
   parseDocument: typeof yamlTypes.parseDocument
@@ -195,7 +195,12 @@ type YamlLibrary = {
 }
 
 type ParsedYamlPosition = { line: number; col: number }
-type ParsingOptions = yamlTypes.ParseOptions
+type ParsingOptions = {
+  keepSourceTokens?: boolean
+  lineCounter?: yamlTypes.LineCounter
+  prettyErrors?: boolean
+  [key: string]: unknown
+}
 
 export type ParsedYamlError = {
   message: string
@@ -244,7 +249,11 @@ export function parseAriaSnapshot(
       const itemIsString =
         item instanceof yaml.Scalar && typeof item.value === 'string'
       if (itemIsString) {
-        const childNode = KeyParser.parse(item, parseOptions, errors)
+        const childNode = KeyParser.parse(
+          item as yamlTypes.Scalar<string>,
+          parseOptions,
+          errors
+        )
         if (childNode) {
           container.children = container.children || []
           container.children.push(childNode)
@@ -293,7 +302,7 @@ export function parseAriaSnapshot(
         }
         container.children.push({
           kind: 'text',
-          text: textValue(value.value),
+          text: textValue(value.value as string),
         })
         continue
       }
@@ -330,7 +339,7 @@ export function parseAriaSnapshot(
           continue
         }
         container.props = container.props ?? {}
-        container.props[key.value.slice(1)] = textValue(value.value)
+        container.props[key.value.slice(1)] = textValue(value.value as string)
         continue
       }
 

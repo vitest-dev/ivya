@@ -10,6 +10,7 @@ import {
   type AriaTemplateNode,
   parseAriaSnapshotUnsafe,
 } from './folk/isomorphic/ariaSnapshot'
+import * as yaml from './yaml'
 
 export type { AriaNode, AriaTemplateNode } from './folk/isomorphic/ariaSnapshot'
 
@@ -19,6 +20,6 @@ export { renderAriaTemplate } from './template'
 
 export { matchAriaTree } from './match'
 
-export function parseAriaTemplate(yamlLib: any, text: string): AriaTemplateNode {
-  return parseAriaSnapshotUnsafe(yamlLib, text)
+export function parseAriaTemplate(text: string): AriaTemplateNode {
+  return parseAriaSnapshotUnsafe(yaml, text)
 }
