@@ -15,9 +15,20 @@ import { formatTextValue, formatNameValue } from './template'
 // ---------------------------------------------------------------------------
 // matchAriaTree — three-way merge matching (vitest-specific)
 //
-// Uses folk's matchesNode for boolean matching and folk's renderNodeLines
-// for actual-side rendering. Only the merge assembly and template rendering
-// (which Playwright doesn't need) are implemented here.
+// Architecture — separation of pass/fail and rendering:
+//   pass/fail is decided exclusively at the *list* level (mergeChildLists)
+//   using folk's matchesNode, which is a full-depth recursive boolean check.
+//   mergeNode is purely a rendering function — it builds the resolved output
+//   through the template's lens but has no say in pass/fail (returns string[],
+//   not a boolean). This separation works because matchesNode already
+//   traverses the full subtree; re-checking at the node level would be
+//   redundant. The entry point (matchAriaTree) wraps root and template in
+//   single-element lists so that mergeChildLists — and its pass/fail
+//   authority — is always the top-level driver.
+//
+// folk's renderNodeLines is used for actual-side rendering. Only the merge
+// assembly and template rendering (which Playwright doesn't need) are
+// implemented here.
 //
 // Fragment semantics:
 //   A fragment node has no semantics of its own — it exists only because
@@ -119,7 +130,11 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // recurse as lists to normalize top-level fragments
+  // Enter through mergeChildLists — this is intentional, not just for
+  // fragment normalization. mergeChildLists is the only function that
+  // decides pass/fail (via matchesNode); mergeNode below it is purely
+  // rendering. Wrapping in single-element lists ensures that contract
+  // holds from the top level down.
   const result = mergeChildLists([root], [template], '')
 
   return {
@@ -132,10 +147,15 @@ export function matchAriaTree(
 // Merge internals
 // ---------------------------------------------------------------------------
 
-interface MergeLines {
+/** Result of mergeChildLists — decides pass/fail and builds resolved lines. */
+interface MergeResult {
   resolved: string[]
   pass: boolean
 }
+
+/** Result of mergeNode — rendering only; pass/fail is decided by the caller
+ *  via matchesNode, not by mergeNode itself. */
+type ResolvedLines = string[]
 
 function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
@@ -242,7 +262,7 @@ function mergeChildLists(
   templates: AriaTemplateNode[],
   indent: string,
   containerMode?: ContainerMode
-): MergeLines {
+): MergeResult {
   // fragment = its children (a fragment has no semantics of its own)
   children = children.flatMap((c) =>
     typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
@@ -272,8 +292,7 @@ function mergeChildLists(
       const ti = recoveredPairs.get(ci)
       if (ti !== undefined) {
         // recursively merge for matched pairs to preserve template pattern on matched branches.
-        const r = mergeNode(children[ci], templates[ti], indent)
-        resolved.push(...r.resolved)
+        resolved.push(...mergeNode(children[ci], templates[ti], indent))
       } else {
         // on unpaired child branch, we fully update with actual dom render.
         resolved.push(...renderChildLines(children[ci], indent))
@@ -288,8 +307,7 @@ function mergeChildLists(
   for (let ci = 0; ci < children.length; ci++) {
     const ti = pairs.get(ci)
     if (ti !== undefined) {
-      const r = mergeNode(children[ci], templates[ti], indent)
-      resolved.push(...r.resolved)
+      resolved.push(...mergeNode(children[ci], templates[ti], indent))
     }
   }
 
@@ -302,7 +320,7 @@ function mergeChildListsEqual(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[],
   indent: string
-): MergeLines {
+): MergeResult {
   const resolved: string[] = []
 
   const allPositionalMatched =
@@ -311,8 +329,7 @@ function mergeChildListsEqual(
 
   for (let ci = 0; ci < children.length; ci++) {
     if (ci < templates.length) {
-      const r = mergeNode(children[ci], templates[ci], indent)
-      resolved.push(...r.resolved)
+      resolved.push(...mergeNode(children[ci], templates[ci], indent))
     } else {
       resolved.push(...renderChildLines(children[ci], indent))
     }
@@ -321,28 +338,32 @@ function mergeChildListsEqual(
   return { resolved, pass: allPositionalMatched }
 }
 
+/** Render a single actual node through the template's lens.
+ *
+ *  Intentionally returns only resolved lines, not pass/fail. This is
+ *  the unusual part of the design: pass/fail is decided *before* this
+ *  function is called, by mergeChildLists (which uses matchesNode to
+ *  pair children and determine pass). mergeNode is called only after
+ *  pairing is settled — it doesn't need to re-decide, and couldn't
+ *  change the outcome if it tried, because list-level decisions (which
+ *  children to pair, which to skip) have already been made. */
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
   indent: string
-): MergeLines {
+): ResolvedLines {
   // Both text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
     const resolvedText =
       matched && cachedRegex(template.text) ? formatTextValue(template.text) : node
-    const line = `${indent}- text: ${resolvedText}`
-    return { resolved: [line], pass: matched }
+    return [`${indent}- text: ${resolvedText}`]
   }
 
   // One text node and the other not
   if (typeof node === 'string' || template.kind === 'text') {
-    const resolved = renderChildLines(node, indent)
-    return { resolved, pass: false }
+    return renderChildLines(node, indent)
   }
-
-  // Match role name, e.g. `- role`
-  let namePass = matchesStringOrRegex(node.name, template.name)
 
   // Resolved key (e.g. `- heading "Hello" [level=1]`):
   // adopt the template's lens for both name and attributes.
@@ -355,14 +376,20 @@ function mergeNode(
 
   // Recurse into children — if template omits children, the lens says
   // "don't care", so we skip (don't render children in resolved output).
-  const childResult = template.children
+  const childLines = template.children
     ? mergeChildLists(
         node.children,
         template.children,
         `${indent}  `,
         template.containerMode
-      )
-    : { resolved: [] as string[], pass: true }
+      ).resolved
+    : []
+
+  // Build directive line (/children) rendered before children,
+  // and prop pseudo-lines rendered after children.
+  const resolvedDirective: string[] = []
+  if (template.containerMode && template.containerMode !== 'contain')
+    resolvedDirective.push(`${indent}  - /children: ${template.containerMode}`)
 
   const resolvedPseudo: string[] = []
   const allPropKeys = new Set([
@@ -383,45 +410,19 @@ function mergeNode(
     }
   }
 
-  let propsPass = true
-  if (template.props) {
-    for (const [key, tv] of Object.entries(template.props)) {
-      if (!matchesTextValue(node.props[key] || '', tv)) {
-        propsPass = false
-        break
-      }
-    }
-  }
-
-  const attrPass =
-    (template.level === undefined || template.level === node.level) &&
-    (template.checked === undefined || template.checked === node.checked) &&
-    (template.disabled === undefined || template.disabled === node.disabled) &&
-    (template.expanded === undefined || template.expanded === node.expanded) &&
-    (template.pressed === undefined || template.pressed === node.pressed) &&
-    (template.selected === undefined || template.selected === node.selected)
-
-  const pass = namePass && attrPass && propsPass && childResult.pass
-
   const resolved: string[] = []
-
-  const resolvedDirective: string[] = []
-  if (template.containerMode && template.containerMode !== 'contain') {
-    resolvedDirective.push(`${indent}  - /children: ${template.containerMode}`)
-  }
-
   const hasExtra = resolvedDirective.length + resolvedPseudo.length > 0
 
-  if (!childResult.resolved.length && !hasExtra) {
+  if (!childLines.length && !hasExtra) {
     // one liner node with no props, e.g. `- role "name" [props]`
     resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
-    childResult.resolved.length === 1 &&
-    childResult.resolved[0].trimStart().startsWith('- text: ') &&
+    childLines.length === 1 &&
+    childLines[0].trimStart().startsWith('- text: ') &&
     !hasExtra
   ) {
     // one liner node with text child, e.g. `- role "name" [props]: text`
-    const text = childResult.resolved[0].trimStart().slice('- text: '.length)
+    const text = childLines[0].trimStart().slice('- text: '.length)
     resolved.push(`${indent}- ${resolvedKey}: ${text}`)
   } else {
     // multi-line node with children and/or props, e.g.
@@ -431,9 +432,9 @@ function mergeNode(
     //    - /prop: value
     resolved.push(`${indent}- ${resolvedKey}:`)
     resolved.push(...resolvedDirective)
-    resolved.push(...childResult.resolved)
+    resolved.push(...childLines)
     resolved.push(...resolvedPseudo)
   }
 
-  return { resolved, pass }
+  return resolved
 }
