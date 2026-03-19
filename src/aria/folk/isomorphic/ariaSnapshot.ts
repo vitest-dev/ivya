@@ -179,8 +179,10 @@ export type AriaTemplateRoleNode = AriaProps & {
   name?: AriaRegex | string
   children?: AriaTemplateNode[]
   props?: Record<string, AriaTextValue>
-  containerMode?: 'contain' | 'equal' | 'deep-equal'
+  containerMode?: ContainerMode
 }
+
+export type ContainerMode = 'contain' | 'equal' | 'deep-equal'
 
 export type AriaTemplateNode = AriaTemplateRoleNode | AriaTemplateTextNode
 
@@ -731,6 +733,16 @@ export function cachedRegex(template: AriaTextValue): RegExp | null {
   return regex
 }
 
+/**
+ * Full-depth recursive match: checks the node, its attributes, and all
+ * descendants against the template. The `isDeepEqual` parameter does NOT
+ * control recursion depth — matching is always full-depth. It only
+ * controls the *child list mode* when `template.containerMode` is unset:
+ *   - `false` → default contain semantics (template children are a subsequence)
+ *   - `true`  → inherited deep-equal (positional 1:1, propagated to descendants)
+ * When `template.containerMode` is explicitly set (e.g. via `/children: equal`),
+ * it takes precedence over `isDeepEqual`.
+ */
 export function matchesNode(
   node: AriaNode | string,
   template: AriaTemplateNode,

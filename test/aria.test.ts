@@ -4190,11 +4190,48 @@ describe('aria-expanded', () => {
 // ---------------------------------------------------------------------------
 
 describe('/children directive', () => {
-  // Currently ivya's merge always uses contain semantics regardless of
-  // containerMode. These tests record the current behavior so we notice
-  // when support is added.
+  test('/children: equal — exact match passes', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: B
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "actualResolved": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      ",
+        "expected": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      ",
+        "pass": true,
+      }
+    `)
+  })
 
-  test('/children: equal — extra children are NOT rejected (contain semantics)', () => {
+  test('/children: equal — extra children rejected', () => {
     const html = `
       <ul>
         <li>A</li>
@@ -4202,9 +4239,6 @@ describe('/children directive', () => {
         <li>C</li>
       </ul>
     `
-    // Template says equal (only A and C), but actual has A, B, C.
-    // With true equal semantics this should fail; currently it passes
-    // because merge ignores containerMode.
     expect(
       match(
         html,
@@ -4213,8 +4247,7 @@ describe('/children directive', () => {
           - /children: equal
           - listitem: A
           - listitem: C
-      `,
-        { assertInvariant: false }
+      `
       )
     ).toMatchInlineSnapshot(`
       {
@@ -4241,7 +4274,7 @@ describe('/children directive', () => {
     `)
   })
 
-  test('/children: deep-equal — extra children are NOT rejected (contain semantics)', () => {
+  test('/children: deep-equal — extra children rejected (not yet deep)', () => {
     const html = `
       <ul>
         <li>A</li>
@@ -4249,6 +4282,7 @@ describe('/children directive', () => {
         <li>C</li>
       </ul>
     `
+    // deep-equal is not yet implemented; currently falls back to contain.
     expect(
       match(
         html,

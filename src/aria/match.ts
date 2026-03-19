@@ -8,6 +8,7 @@ import {
   type AriaRegex,
   type AriaTemplateNode,
   type AriaTemplateRoleNode,
+  type ContainerMode,
 } from './folk/isomorphic/ariaSnapshot'
 import { formatTextValue, formatNameValue } from './template'
 
@@ -239,7 +240,8 @@ function renderChildLines(child: AriaNode | string, indent: string): string[] {
 function mergeChildLists(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[],
-  indent: string
+  indent: string,
+  containerMode?: ContainerMode
 ): MergeLines {
   // fragment = its children (a fragment has no semantics of its own)
   children = children.flatMap((c) =>
@@ -248,6 +250,10 @@ function mergeChildLists(
   templates = templates.flatMap((t) =>
     t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
   )
+
+  if (containerMode === 'equal') {
+    return mergeChildListsEqual(children, templates, indent)
+  }
 
   const resolved: string[] = []
 
@@ -290,6 +296,31 @@ function mergeChildLists(
   return { resolved, pass: true }
 }
 
+/** Equal mode: positional 1:1 matching. Pass iff same count and every
+ *  positional pair matches (full-depth). */
+function mergeChildListsEqual(
+  children: (AriaNode | string)[],
+  templates: AriaTemplateNode[],
+  indent: string
+): MergeLines {
+  const resolved: string[] = []
+
+  const allPositionalMatched =
+    children.length === templates.length &&
+    children.every((c, i) => matchesNode(c, templates[i], false))
+
+  for (let ci = 0; ci < children.length; ci++) {
+    if (ci < templates.length) {
+      const r = mergeNode(children[ci], templates[ci], indent)
+      resolved.push(...r.resolved)
+    } else {
+      resolved.push(...renderChildLines(children[ci], indent))
+    }
+  }
+
+  return { resolved, pass: allPositionalMatched }
+}
+
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
@@ -325,12 +356,15 @@ function mergeNode(
   // Recurse into children — if template omits children, the lens says
   // "don't care", so we skip (don't render children in resolved output).
   const childResult = template.children
-    ? mergeChildLists(node.children, template.children, `${indent}  `)
+    ? mergeChildLists(
+        node.children,
+        template.children,
+        `${indent}  `,
+        template.containerMode
+      )
     : { resolved: [] as string[], pass: true }
 
-  // Build pseudo-child lines for props
   const resolvedPseudo: string[] = []
-
   const allPropKeys = new Set([
     ...Object.keys(node.props),
     ...Object.keys(template.props || {}),
@@ -371,13 +405,20 @@ function mergeNode(
 
   const resolved: string[] = []
 
-  if (!childResult.resolved.length && !resolvedPseudo.length) {
+  const resolvedDirective: string[] = []
+  if (template.containerMode && template.containerMode !== 'contain') {
+    resolvedDirective.push(`${indent}  - /children: ${template.containerMode}`)
+  }
+
+  const hasExtra = resolvedDirective.length + resolvedPseudo.length > 0
+
+  if (!childResult.resolved.length && !hasExtra) {
     // one liner node with no props, e.g. `- role "name" [props]`
     resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
     childResult.resolved.length === 1 &&
     childResult.resolved[0].trimStart().startsWith('- text: ') &&
-    !resolvedPseudo.length
+    !hasExtra
   ) {
     // one liner node with text child, e.g. `- role "name" [props]: text`
     const text = childResult.resolved[0].trimStart().slice('- text: '.length)
@@ -385,9 +426,11 @@ function mergeNode(
   } else {
     // multi-line node with children and/or props, e.g.
     // - role "name" [props]:
+    //    - /children: equal
     //    - child
     //    - /prop: value
     resolved.push(`${indent}- ${resolvedKey}:`)
+    resolved.push(...resolvedDirective)
     resolved.push(...childResult.resolved)
     resolved.push(...resolvedPseudo)
   }
