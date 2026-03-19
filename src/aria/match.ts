@@ -363,20 +363,14 @@ function mergeNode(
   const resolvedKey = renderResolvedKey(node, template)
 
   // Recurse into children.
-  // In contain mode (default), omitting children means "don't care" — skip.
-  // In equal/deep-equal mode, omitting children means "must have zero" —
-  // render actual children so the diff surfaces the mismatch.
-  const effectiveMode = template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
-  let childLines: string[] = []
-  if (template.children || effectiveMode !== 'contain') {
-    const childrenResult = mergeChildLists(
-      node.children,
-      template.children || [],
-      `${indent}  `,
-      effectiveMode
-    )
-    childLines = childrenResult.resolved
-  }
+  // `childResult.pass` can be ignored since parent `mergeChildLists` already decided pass/fail.
+  const childResult = mergeChildLists(
+    node.children,
+    template.children || [],
+    `${indent}  `,
+    template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
+  )
+  const childLines = childResult.resolved
 
   // Build directive line (/children) rendered before children,
   // and prop pseudo-lines rendered after children.
