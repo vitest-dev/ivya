@@ -13,7 +13,7 @@ import {
   renderAriaTree,
   renderAriaTemplate,
 } from '../src/aria'
-import { describe, expect, test, vi } from 'vite-plus/test'
+import { describe, expect, test, vi } from 'vitest'
 import * as yaml from 'yaml'
 
 function parseAriaTemplate(text: string) {
@@ -3399,7 +3399,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - paragraph: Original
-      - button /\d+/: Pattern
+      - button /d+/: Pattern
     `
       )
     ).toMatchInlineSnapshot(`
@@ -3432,7 +3432,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - button: Cancel
-      - paragraph: /\w+/
+      - paragraph: /w+/
     `
       )
     ).toMatchInlineSnapshot(`
