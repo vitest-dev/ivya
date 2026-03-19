@@ -4370,6 +4370,46 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: deep-equal — omitted children means "must have zero"', () => {
+    // Template omits children on listitem, but actual listitem has a child.
+    // deep-equal propagates equal to descendants, so this should fail and
+    // render the actual children in the diff (not hide them).
+    const html = `
+      <ul>
+        <li><strong>A</strong></li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: deep-equal
+          - listitem
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem:
+          - strong: A
+      ",
+        "actualResolved": "
+      - list:
+        - listitem:
+          - strong: A
+      ",
+        "expected": "
+      - list:
+        - /children: deep-equal
+        - listitem
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
   test('/children: contain — behaves the same as default', () => {
     const html = `
       <ul>

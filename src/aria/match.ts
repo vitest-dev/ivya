@@ -362,15 +362,21 @@ function mergeNode(
   //   template has attr   (e.g. [level=1])           → resolved includes it
   const resolvedKey = renderResolvedKey(node, template)
 
-  // Recurse into children — if template omits children, the lens says
-  // "don't care", so we skip (don't render children in resolved output).
-  // When isDeepEqual is inherited and the template doesn't set its own
-  // containerMode, propagate equal semantics to descendants.
-  const effectiveMode = template.containerMode ?? (isDeepEqual ? 'equal' : undefined)
-  const childLines = template.children
-    ? mergeChildLists(node.children, template.children, `${indent}  `, effectiveMode)
-        .resolved
-    : []
+  // Recurse into children.
+  // In contain mode (default), omitting children means "don't care" — skip.
+  // In equal/deep-equal mode, omitting children means "must have zero" —
+  // render actual children so the diff surfaces the mismatch.
+  const effectiveMode = template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
+  const expectsChildren = template.children || effectiveMode !== 'contain'
+  let childLines: string[] = []
+  if (expectsChildren) {
+    childLines = mergeChildLists(
+      node.children,
+      template.children || [],
+      `${indent}  `,
+      effectiveMode
+    ).resolved
+  }
 
   // Build directive line (/children) rendered before children,
   // and prop pseudo-lines rendered after children.
