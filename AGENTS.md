@@ -32,5 +32,5 @@ When syncing upstream or considering filing issues, review this list. If a diver
 - Iterate on aria snapshot utility feature
 
 ```sh
-pnpm test test/aria.test.ts --browser.headless --update
+vp run test test/aria.test.ts --browser.headless --update
 ```

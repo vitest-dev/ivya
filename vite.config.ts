@@ -15,7 +15,6 @@ export default defineConfig({
     clean: true,
     dts: true,
   },
-
   fmt: {
     semi: false,
     trailingComma: 'es5',
