@@ -29,19 +29,18 @@
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
-    "dev": "tsdown --watch --sourcemap",
-    "build": "tsdown",
+    "prepare": "vp config",
+    "dev": "vp pack --watch --sourcemap",
+    "build": "vp pack",
     "typecheck": "tsc -b",
-    "format": "oxfmt",
     "test": "vitest"
   },
   "devDependencies": {
     "@vitest/browser-playwright": "^4.1.0",
-    "oxfmt": "^0.40.0",
     "playwright": "^1.58.2",
-    "tsdown": "^0.21.2",
     "typescript": "^5.8.2",
     "vite": "^8.0.0",
+    "vite-plus": "latest",
     "vitest": "^4.1.0",
     "yaml": "^2.8.2"
   },
