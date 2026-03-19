@@ -101,8 +101,9 @@ export class YAMLError extends Error {
 // ---------------------------------------------------------------------------
 
 export interface ParseOptions {
-  keepSourceTokens?: boolean
   lineCounter?: LineCounter
+  // unused
+  keepSourceTokens?: boolean
   prettyErrors?: boolean
   [key: string]: unknown
 }
@@ -145,10 +146,11 @@ export function parseDocument(
 
 interface Line {
   indent: number
+  content: string // trimmed content (no leading/trailing whitespace)
+  // below are only for error position reporting
   offset: number // absolute offset of first non-whitespace char
   lineOffset: number // absolute offset of start of line
   raw: string // full line including leading whitespace
-  content: string // trimmed content (no leading/trailing whitespace)
 }
 
 // ---------------------------------------------------------------------------
@@ -175,10 +177,10 @@ class Parser {
       const indent = stripped.length - trimmed.length
       this.lines.push({
         indent,
+        content: trimmed,
         offset: offset + indent,
         lineOffset: offset,
         raw: stripped,
-        content: trimmed,
       })
       offset += raw.length + 1 // +1 for \n
     }
