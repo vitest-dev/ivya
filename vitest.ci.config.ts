@@ -1,15 +1,10 @@
-import { defineConfig } from 'vitest/config'
-import { playwright } from '@vitest/browser-playwright'
+import { mergeConfig } from 'vitest/config'
+import baseConfig from './vitest.config'
 
-export default defineConfig({
+export default mergeConfig(baseConfig, {
   test: {
     browser: {
-      enabled: true,
-      provider: playwright(),
       instances: [
-        {
-          browser: 'chromium',
-        },
         {
           browser: 'firefox',
         },

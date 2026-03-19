@@ -59,9 +59,13 @@ function renderTemplateLines(
   const children = node.children || []
 
   const pseudoLines: string[] = []
+  if (node.containerMode && node.containerMode !== 'contain') {
+    pseudoLines.push(`${indent}  - /children: ${node.containerMode}`)
+  }
   if (node.props) {
-    for (const [name, tv] of Object.entries(node.props))
+    for (const [name, tv] of Object.entries(node.props)) {
       pseudoLines.push(`${indent}  - /${name}: ${formatTextValue(tv)}`)
+    }
   }
 
   if (children.length === 0 && pseudoLines.length === 0) {
@@ -77,6 +81,8 @@ function renderTemplateLines(
     return
   }
   lines.push(`${indent}- ${key}:`)
-  for (const child of children) renderTemplateLines(child, `${indent}  `, lines)
   lines.push(...pseudoLines)
+  for (const child of children) {
+    renderTemplateLines(child, `${indent}  `, lines)
+  }
 }
