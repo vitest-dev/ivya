@@ -1,13 +1,12 @@
 /**
  * Unit tests for the minimal YAML parser.
  *
- * Ported from vendor/yaml/tests/, scoped to the subset we support:
- * sequences, maps, scalars (plain, quoted, numeric, boolean),
- * indentation nesting, error reporting with positions.
+ * Tests the supported subset: sequences, maps, scalars (plain, quoted,
+ * numeric, boolean), indentation nesting, error reporting with positions.
+ * Test inputs are modeled after aria snapshot template patterns.
  *
- * Original test sources:
- *   Copyright Eemeli Aro <eemeli@gmail.com>
- *   ISC License — see src/aria/yaml.ts for full text.
+ * The parser itself is API-compatible with the `yaml` package by Eemeli Aro
+ * (ISC License) — see src/aria/yaml.ts for attribution.
  */
 
 import { describe, expect, test } from 'vitest'

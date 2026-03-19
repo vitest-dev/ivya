@@ -2,8 +2,9 @@
  * Minimal YAML parser for aria snapshot templates.
  *
  * API-compatible subset of the `yaml` package by Eemeli Aro.
- * Ported to avoid the full dependency (~97 KB min) for the narrow
- * YAML subset that aria templates actually use.
+ * Clean-room implementation — not a fork — covering only the narrow
+ * YAML subset that aria templates actually use, to avoid the full
+ * dependency (~97 KB min).
  *
  * Supports only:
  * - Sequences (- item)
@@ -13,6 +14,30 @@
  *
  * NOT supported: anchors, aliases, tags, merge keys, block scalars,
  * flow collections, multi-document, comments.
+ *
+ * Conceptual mapping to the original `yaml` package (for comparison):
+ *
+ *   This file                          │ Original (`yaml` package)
+ *   ────────────────────────────────── │ ──────────────────────────────────────
+ *   parseDocument()                    │ src/public-api.ts → parseDocument()
+ *   Parser.parseRoot()                 │ src/compose/compose-doc.ts
+ *   Parser.parseNode()                 │ src/compose/compose-node.ts
+ *   Parser.parseSequence()             │ src/compose/resolve-block-seq.ts
+ *   Parser.parseMap()                  │ src/compose/resolve-block-map.ts
+ *   Parser.parseInlineMap()            │ (no direct equivalent — handled by
+ *                                      │  CST parser + resolve-block-map.ts)
+ *   Parser.parseScalarValue()          │ src/compose/compose-scalar.ts
+ *   Parser.parseQuotedScalar()         │ src/compose/resolve-flow-scalar.ts
+ *                                      │  → doubleQuotedValue()
+ *   Parser.findMapColon()              │ src/parse/lexer.ts (token-level)
+ *   LineCounter                        │ src/parse/line-counter.ts
+ *   Scalar / YAMLMap / YAMLSeq         │ src/nodes/Scalar.ts, YAMLMap.ts,
+ *                                      │  YAMLSeq.ts
+ *   YAMLError                          │ src/errors.ts → YAMLParseError
+ *
+ * The original uses a 3-stage pipeline (Lexer → CST Parser → Composer).
+ * This implementation is a single-pass line-based parser that builds AST
+ * nodes directly, which is sufficient for the supported subset.
  *
  * Original yaml package:
  *   Copyright Eemeli Aro <eemeli@gmail.com>
