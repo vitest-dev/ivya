@@ -4184,3 +4184,144 @@ describe('aria-expanded', () => {
       `)
   })
 })
+
+// ---------------------------------------------------------------------------
+// /children directive
+// ---------------------------------------------------------------------------
+
+describe('/children directive', () => {
+  // Currently ivya's merge always uses contain semantics regardless of
+  // containerMode. These tests record the current behavior so we notice
+  // when support is added.
+
+  test('/children: equal — extra children are NOT rejected (contain semantics)', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    // Template says equal (only A and C), but actual has A, B, C.
+    // With true equal semantics this should fail; currently it passes
+    // because merge ignores containerMode.
+    expect(
+      match(html, `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: C
+      `, { assertInvariant: false })
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal — extra children are NOT rejected (contain semantics)', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(html, `
+        - list:
+          - /children: deep-equal
+          - listitem: A
+          - listitem: C
+      `, { assertInvariant: false })
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: contain — behaves the same as default', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(html, `
+        - list:
+          - /children: contain
+          - listitem: A
+          - listitem: C
+      `, { assertInvariant: false })
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('renderAriaTemplate drops /children directive', () => {
+    const t = parseAriaTemplate(`
+      - list:
+        - /children: equal
+        - listitem: A
+    `)
+    expect(renderAriaTemplate(t)).toMatchInlineSnapshot(`
+      "- list:
+        - listitem: A"
+    `)
+  })
+})
