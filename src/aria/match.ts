@@ -61,25 +61,10 @@ import { formatTextValue, formatNameValue } from './template'
 //     convertToBestGuessRegex) and overwrites the snapshot wholesale.
 //     Our merge preserves user-edited patterns from the expected side.
 //
-// Two-pass pairing in mergeChildLists:
-//   Pass 1: O(C) greedy left-to-right, full-depth matchesNode.
-//     Determines pass (all templates matched = pass). This is the same
-//     algorithm as Playwright's containsList.
-//   Pass 2: O(C × T) unordered, full-depth matchesNode (only on failure).
-//     Recovers exact pairs that pass 1's greedy scan missed — e.g.
-//     template [paragraph "wrong", button /\d+/] vs children [paragraph,
-//     button]: pass 1 fails paragraph and advances past it, then can't
-//     match button against the paragraph template. Pass 2 scans all
-//     children per template and finds the button match, preserving the
-//     regex in the merge output instead of dumping a full literal snapshot.
-//     pass is already false — pass 2 only improves merge quality.
-//
-//   Complexity: matchesNode recurses with O(C × T) internally (via
-//   containsList) at each tree level, so the total work across the tree
-//   is already O(N × T) where N = total actual nodes, T = total template
-//   nodes. Pass 2 adds a factor of T at the failing level only (O(C × T)
-//   calls instead of O(C)), each recursing O(subtree). This only triggers
-//   on failure and sibling lists are small in practice.
+// Complexity: matchesNode is always full-depth (recurses the subtree),
+//   so each call is O(subtree × template). The contain-mode pass 2
+//   (pairChildrenFull) adds a factor of T at the failing level only.
+//   This only triggers on failure and sibling lists are small in practice.
 // ---------------------------------------------------------------------------
 
 /**
@@ -200,7 +185,7 @@ function renderResolvedKey(node: AriaNode, template: AriaTemplateRoleNode): stri
   return key
 }
 
-// --- Pairing + merge ---
+// --- Contain-mode pairing helpers ---
 
 function pairChildren(
   children: (AriaNode | string)[],
@@ -273,8 +258,7 @@ function mergeChildLists(
 
   const resolved: string[] = []
 
-  // we allow matching as subset so it can pass with
-  // children.length >= templates.length === pairs.size
+  // Contain mode (default): subsequence match via two-pass pairing.
   const pairs = pairChildren(children, templates)
   const allTemplatesMatched = templates.length === pairs.size
 
@@ -298,8 +282,7 @@ function mergeChildLists(
     return { resolved, pass: false }
   }
 
-  // All templates matched (full-depth) — pass is true.
-  // mergeNode is only called here for rendering, not for pass/fail.
+  // All templates paired — render only matched children (contain = skip extras).
   for (let ci = 0; ci < children.length; ci++) {
     const ti = pairs.get(ci)
     if (ti !== undefined) {
