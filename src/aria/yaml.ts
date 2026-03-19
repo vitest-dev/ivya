@@ -182,7 +182,14 @@ class Parser {
 
   parseRoot(): Scalar | YAMLMap | YAMLSeq | null {
     if (this.lines.length === 0) return null
-    return this.parseNode(0)
+    const result = this.parseNode(0)
+    // Error on unconsumed non-empty lines at root level
+    this.skipEmpty()
+    if (this.pos < this.lines.length) {
+      const line = this.currentLine()!
+      this.addError('Unexpected scalar at node end', line.offset)
+    }
+    return result
   }
 
   private currentLine(): Line | undefined {
