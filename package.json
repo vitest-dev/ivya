@@ -29,21 +29,26 @@
     "./utils": "./dist/publicUtils.js"
   },
   "scripts": {
-    "dev": "tsdown --watch --sourcemap",
-    "build": "tsdown",
+    "dev": "vp pack --watch --sourcemap",
+    "build": "vp pack",
     "typecheck": "tsc -b",
-    "format": "oxfmt",
-    "test": "vitest"
+    "format": "vp fmt",
+    "test": "vp test",
+    "prepare": "vp config"
   },
   "devDependencies": {
-    "@vitest/browser-playwright": "^4.1.0",
-    "oxfmt": "^0.40.0",
     "playwright": "^1.58.2",
-    "tsdown": "^0.21.2",
     "typescript": "^5.8.2",
-    "vite": "^8.0.0",
-    "vitest": "^4.1.0",
-    "yaml": "^2.8.2"
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest",
+    "yaml": "^2.8.2",
+    "vite-plus": "latest"
   },
-  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    }
+  }
 }

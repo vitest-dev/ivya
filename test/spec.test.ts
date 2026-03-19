@@ -8,7 +8,7 @@ import {
   Ivya,
   asLocator,
 } from '../src'
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 
 test('works correctly', () => {
   const button = document.createElement('button')

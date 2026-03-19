@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsdown'
+import { defineConfig } from 'vite-plus/pack'
 
 export default defineConfig({
   entry: ['src/index.ts', 'src/publicUtils.ts', 'src/aria/index.ts'],

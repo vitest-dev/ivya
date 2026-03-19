@@ -1,5 +1,5 @@
 import { getByTestIdSelector, Ivya } from '../src'
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 
 test('locates element inside iframe', async () => {
   const iframe = document.createElement('iframe')

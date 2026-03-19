@@ -13,7 +13,7 @@ import {
   renderAriaTree,
   renderAriaTemplate,
 } from '../src/aria'
-import { describe, expect, test, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vite-plus/test'
 import * as yaml from 'yaml'
 
 function parseAriaTemplate(text: string) {
