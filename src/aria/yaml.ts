@@ -157,6 +157,27 @@ interface Line {
 // Parser
 // ---------------------------------------------------------------------------
 
+/**
+ * Single-pass line-based recursive descent parser.
+ *
+ * Call graph (recursion points are parseNode calls):
+ *
+ *   parseRoot
+ *     → parseNode(minIndent)
+ *       → parseSequence(baseIndent)
+ *           → parseNode(baseIndent + 1)               "- \n" then indented child
+ *           → parseInlineMap(contentIndent)            "- key: value"
+ *               → parseScalarValue                     inline value
+ *               → parseMapValue(contentIndent)         "- key:\n" then child
+ *                   → parseNode(contentIndent + 1)       indented child
+ *                   → parseNode(contentIndent)           block seq at same indent
+ *           → parseScalarValue                         "- scalar"
+ *       → parseMap(baseIndent)
+ *           → parseScalarValue                         inline value
+ *           → parseMapValue                            "key:\n" then child
+ *       → parseScalarValue
+ *           → parseQuotedScalar                        starts with "
+ */
 class Parser {
   private lines: Line[]
   private pos: number // current line index
