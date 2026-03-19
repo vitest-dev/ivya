@@ -3374,7 +3374,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - paragraph: Original
-      - button /\d+/: Pattern
+      - button /\\d+/: Pattern
     `
       )
     ).toMatchInlineSnapshot(`
@@ -3386,12 +3386,12 @@ describe('matchAriaTree', () => {
       ",
         "actualResolved": "
       - paragraph: Changed
-      - button "1234": Pattern
+      - button /\\d+/: Pattern
       - text: extra
       ",
         "expected": "
       - paragraph: Original
-      - button /d+/: Pattern
+      - button /\\d+/: Pattern
       ",
         "pass": false,
       }
@@ -3407,7 +3407,7 @@ describe('matchAriaTree', () => {
     `,
         `
       - button: Cancel
-      - paragraph: /\w+/
+      - paragraph: /\\w+/
     `
       )
     ).toMatchInlineSnapshot(`
@@ -3422,7 +3422,7 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - button: Cancel
-      - paragraph: /w+/
+      - paragraph: /\\w+/
       ",
         "pass": false,
       }
@@ -3958,8 +3958,8 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - link:
-        - text: Click here
         - /url: /.*example.com/
+        - text: Click here
       ",
         "pass": false,
       }
@@ -3991,8 +3991,8 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - link:
-        - text: Wrong text
         - /url: /.*example.com/
+        - text: Wrong text
       ",
         "pass": false,
       }
@@ -4157,5 +4157,344 @@ describe('aria-expanded', () => {
           "pass": false,
         }
       `)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// /children directive
+// ---------------------------------------------------------------------------
+
+describe('/children directive', () => {
+  test('/children: equal — exact match passes', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: B
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "actualResolved": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      ",
+        "expected": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('/children: equal — extra children rejected', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: C
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal — extra children rejected', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: deep-equal
+          - listitem: A
+          - listitem: C
+      `,
+        { assertInvariant: false }
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - /children: deep-equal
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal — propagates equal to descendants', () => {
+    // Inner list has 2 items but template only mentions 1.
+    // With contain this would pass; deep-equal rejects it.
+    const html = `
+      <ul>
+        <li>
+          <ul>
+            <li>X</li>
+            <li>Y</li>
+          </ul>
+        </li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: deep-equal
+          - listitem:
+            - list:
+              - listitem: X
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem:
+          - list:
+            - listitem: X
+            - listitem: "Y"
+      ",
+        "actualResolved": "
+      - list:
+        - listitem:
+          - list:
+            - listitem: X
+            - listitem: "Y"
+      ",
+        "expected": "
+      - list:
+        - /children: deep-equal
+        - listitem:
+          - list:
+            - listitem: X
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal — omitted children means "must have zero"', () => {
+    // Template omits children on listitem, but actual listitem has a child.
+    // deep-equal propagates equal to descendants, so this should fail and
+    // render the actual children in the diff (not hide them).
+    const html = `
+      <ul>
+        <li><strong>A</strong></li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: deep-equal
+          - listitem
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem:
+          - strong: A
+      ",
+        "actualResolved": "
+      - list:
+        - listitem:
+          - strong: A
+      ",
+        "expected": "
+      - list:
+        - /children: deep-equal
+        - listitem
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: equal — resolved preserves directive on matched branch, purges on failed', () => {
+    // Two sibling lists both with /children: equal.
+    // First list matches exactly → directive preserved in resolved.
+    // Second list has extra child → matchesNode fails, branch re-rendered
+    // from actual DOM (directive lost).
+    const html = `
+      <ul><li>A</li><li>B</li></ul>
+      <ul><li>X</li><li>Y</li><li>Z</li></ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: B
+        - list:
+          - /children: equal
+          - listitem: X
+          - listitem: Z
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      - list:
+        - listitem: X
+        - listitem: "Y"
+        - listitem: Z
+      ",
+        "actualResolved": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      - list:
+        - listitem: X
+        - listitem: "Y"
+        - listitem: Z
+      ",
+        "expected": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      - list:
+        - /children: equal
+        - listitem: X
+        - listitem: Z
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: contain — behaves the same as default', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: contain
+          - listitem: A
+          - listitem: C
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('renderAriaTemplate preserves /children directive', () => {
+    const t = parseAriaTemplate(`
+      - list:
+        - /children: equal
+        - listitem: A
+    `)
+    expect(renderAriaTemplate(t)).toMatchInlineSnapshot(`
+      "- list:
+        - /children: equal
+        - listitem: A"
+    `)
   })
 })

@@ -8,15 +8,27 @@ import {
   type AriaRegex,
   type AriaTemplateNode,
   type AriaTemplateRoleNode,
+  type ContainerMode,
 } from './folk/isomorphic/ariaSnapshot'
 import { formatTextValue, formatNameValue } from './template'
 
 // ---------------------------------------------------------------------------
 // matchAriaTree — three-way merge matching (vitest-specific)
 //
-// Uses folk's matchesNode for boolean matching and folk's renderNodeLines
-// for actual-side rendering. Only the merge assembly and template rendering
-// (which Playwright doesn't need) are implemented here.
+// Architecture — separation of pass/fail and rendering:
+//   pass/fail is decided exclusively at the *list* level (mergeChildLists)
+//   using folk's matchesNode, which is a full-depth recursive boolean check.
+//   mergeNode is purely a rendering function — it builds the resolved output
+//   through the template's lens but has no say in pass/fail (returns string[],
+//   not a boolean). This separation works because matchesNode already
+//   traverses the full subtree; re-checking at the node level would be
+//   redundant. The entry point (matchAriaTree) wraps root and template in
+//   single-element lists so that mergeChildLists — and its pass/fail
+//   authority — is always the top-level driver.
+//
+// folk's renderNodeLines is used for actual-side rendering. Only the merge
+// assembly and template rendering (which Playwright doesn't need) are
+// implemented here.
 //
 // Fragment semantics:
 //   A fragment node has no semantics of its own — it exists only because
@@ -49,25 +61,10 @@ import { formatTextValue, formatNameValue } from './template'
 //     convertToBestGuessRegex) and overwrites the snapshot wholesale.
 //     Our merge preserves user-edited patterns from the expected side.
 //
-// Two-pass pairing in mergeChildLists:
-//   Pass 1: O(C) greedy left-to-right, full-depth matchesNode.
-//     Determines pass (all templates matched = pass). This is the same
-//     algorithm as Playwright's containsList.
-//   Pass 2: O(C × T) unordered, full-depth matchesNode (only on failure).
-//     Recovers exact pairs that pass 1's greedy scan missed — e.g.
-//     template [paragraph "wrong", button /\d+/] vs children [paragraph,
-//     button]: pass 1 fails paragraph and advances past it, then can't
-//     match button against the paragraph template. Pass 2 scans all
-//     children per template and finds the button match, preserving the
-//     regex in the merge output instead of dumping a full literal snapshot.
-//     pass is already false — pass 2 only improves merge quality.
-//
-//   Complexity: matchesNode recurses with O(C × T) internally (via
-//   containsList) at each tree level, so the total work across the tree
-//   is already O(N × T) where N = total actual nodes, T = total template
-//   nodes. Pass 2 adds a factor of T at the failing level only (O(C × T)
-//   calls instead of O(C)), each recursing O(subtree). This only triggers
-//   on failure and sibling lists are small in practice.
+// Complexity: matchesNode is always full-depth (recurses the subtree),
+//   so each call is O(subtree × template). The contain-mode pass 2
+//   (pairChildrenFull) adds a factor of T at the failing level only.
+//   This only triggers on failure and sibling lists are small in practice.
 // ---------------------------------------------------------------------------
 
 /**
@@ -118,7 +115,11 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // recurse as lists to normalize top-level fragments
+  // Enter through mergeChildLists — this is intentional, not just for
+  // fragment normalization. mergeChildLists is the only function that
+  // decides pass/fail (via matchesNode); mergeNode below it is purely
+  // rendering. Wrapping in single-element lists ensures that contract
+  // holds from the top level down.
   const result = mergeChildLists([root], [template], '')
 
   return {
@@ -131,7 +132,8 @@ export function matchAriaTree(
 // Merge internals
 // ---------------------------------------------------------------------------
 
-interface MergeLines {
+/** Result of mergeChildLists — decides pass/fail and builds resolved lines. */
+interface MergeResult {
   resolved: string[]
   pass: boolean
 }
@@ -183,7 +185,7 @@ function renderResolvedKey(node: AriaNode, template: AriaTemplateRoleNode): stri
   return key
 }
 
-// --- Pairing + merge ---
+// --- Contain-mode pairing helpers ---
 
 function pairChildren(
   children: (AriaNode | string)[],
@@ -239,8 +241,9 @@ function renderChildLines(child: AriaNode | string, indent: string): string[] {
 function mergeChildLists(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[],
-  indent: string
-): MergeLines {
+  indent: string,
+  containerMode?: ContainerMode
+): MergeResult {
   // fragment = its children (a fragment has no semantics of its own)
   children = children.flatMap((c) =>
     typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
@@ -249,10 +252,18 @@ function mergeChildLists(
     t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
   )
 
+  if (containerMode === 'equal' || containerMode === 'deep-equal') {
+    return mergeChildListsEqual(
+      children,
+      templates,
+      indent,
+      containerMode === 'deep-equal'
+    )
+  }
+
   const resolved: string[] = []
 
-  // we allow matching as subset so it can pass with
-  // children.length >= templates.length === pairs.size
+  // Contain mode (default): subsequence match via two-pass pairing.
   const pairs = pairChildren(children, templates)
   const allTemplatesMatched = templates.length === pairs.size
 
@@ -266,8 +277,7 @@ function mergeChildLists(
       const ti = recoveredPairs.get(ci)
       if (ti !== undefined) {
         // recursively merge for matched pairs to preserve template pattern on matched branches.
-        const r = mergeNode(children[ci], templates[ti], indent)
-        resolved.push(...r.resolved)
+        resolved.push(...mergeNode(children[ci], templates[ti], indent))
       } else {
         // on unpaired child branch, we fully update with actual dom render.
         resolved.push(...renderChildLines(children[ci], indent))
@@ -277,41 +287,71 @@ function mergeChildLists(
     return { resolved, pass: false }
   }
 
-  // All templates matched (full-depth) — pass is true.
-  // mergeNode is only called here for rendering, not for pass/fail.
+  // All templates paired — render only matched children (contain = skip extras).
   for (let ci = 0; ci < children.length; ci++) {
     const ti = pairs.get(ci)
     if (ti !== undefined) {
-      const r = mergeNode(children[ci], templates[ti], indent)
-      resolved.push(...r.resolved)
+      resolved.push(...mergeNode(children[ci], templates[ti], indent))
     }
   }
 
   return { resolved, pass: true }
 }
 
+/** Equal/deep-equal mode: positional 1:1 matching. Pass iff same count
+ *  and every positional pair matches (full-depth). When isDeepEqual is
+ *  true, descendant nodes without explicit containerMode inherit equal
+ *  semantics. */
+function mergeChildListsEqual(
+  children: (AriaNode | string)[],
+  templates: AriaTemplateNode[],
+  indent: string,
+  isDeepEqual: boolean
+): MergeResult {
+  const resolved: string[] = []
+
+  const allPositionalMatched =
+    children.length === templates.length &&
+    children.every((c, i) => matchesNode(c, templates[i], isDeepEqual))
+
+  for (let ci = 0; ci < children.length; ci++) {
+    if (ci < templates.length) {
+      resolved.push(...mergeNode(children[ci], templates[ci], indent, isDeepEqual))
+    } else {
+      resolved.push(...renderChildLines(children[ci], indent))
+    }
+  }
+
+  return { resolved, pass: allPositionalMatched }
+}
+
+/** Render a single actual node through the template's lens.
+ *
+ *  Intentionally returns only resolved lines, not pass/fail. This is
+ *  the unusual part of the design: pass/fail is decided *before* this
+ *  function is called, by mergeChildLists (which uses matchesNode to
+ *  pair children and determine pass). mergeNode is called only after
+ *  pairing is settled — it doesn't need to re-decide, and couldn't
+ *  change the outcome if it tried, because list-level decisions (which
+ *  children to pair, which to skip) have already been made. */
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
-  indent: string
-): MergeLines {
+  indent: string,
+  isDeepEqual = false
+): string[] {
   // Both text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
     const resolvedText =
       matched && cachedRegex(template.text) ? formatTextValue(template.text) : node
-    const line = `${indent}- text: ${resolvedText}`
-    return { resolved: [line], pass: matched }
+    return [`${indent}- text: ${resolvedText}`]
   }
 
   // One text node and the other not
   if (typeof node === 'string' || template.kind === 'text') {
-    const resolved = renderChildLines(node, indent)
-    return { resolved, pass: false }
+    return renderChildLines(node, indent)
   }
-
-  // Match role name, e.g. `- role`
-  let namePass = matchesStringOrRegex(node.name, template.name)
 
   // Resolved key (e.g. `- heading "Hello" [level=1]`):
   // adopt the template's lens for both name and attributes.
@@ -322,14 +362,21 @@ function mergeNode(
   //   template has attr   (e.g. [level=1])           → resolved includes it
   const resolvedKey = renderResolvedKey(node, template)
 
-  // Recurse into children — if template omits children, the lens says
-  // "don't care", so we skip (don't render children in resolved output).
-  const childResult = template.children
-    ? mergeChildLists(node.children, template.children, `${indent}  `)
-    : { resolved: [] as string[], pass: true }
+  // Recurse into children.
+  // `childResult.pass` can be ignored since parent `mergeChildLists` already decided pass/fail.
+  const childResult = mergeChildLists(
+    node.children,
+    template.children || [],
+    `${indent}  `,
+    template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
+  )
 
-  // Build pseudo-child lines for props
+  // Build directive line (/children) rendered before children,
+  // and prop pseudo-lines rendered after children.
   const resolvedPseudo: string[] = []
+  if (template.containerMode && template.containerMode !== 'contain') {
+    resolvedPseudo.push(`${indent}  - /children: ${template.containerMode}`)
+  }
 
   const allPropKeys = new Set([
     ...Object.keys(node.props),
@@ -349,48 +396,29 @@ function mergeNode(
     }
   }
 
-  let propsPass = true
-  if (template.props) {
-    for (const [key, tv] of Object.entries(template.props)) {
-      if (!matchesTextValue(node.props[key] || '', tv)) {
-        propsPass = false
-        break
-      }
-    }
-  }
-
-  const attrPass =
-    (template.level === undefined || template.level === node.level) &&
-    (template.checked === undefined || template.checked === node.checked) &&
-    (template.disabled === undefined || template.disabled === node.disabled) &&
-    (template.expanded === undefined || template.expanded === node.expanded) &&
-    (template.pressed === undefined || template.pressed === node.pressed) &&
-    (template.selected === undefined || template.selected === node.selected)
-
-  const pass = namePass && attrPass && propsPass && childResult.pass
-
   const resolved: string[] = []
 
   if (!childResult.resolved.length && !resolvedPseudo.length) {
-    // one liner node with no props, e.g. `- role "name" [props]`
+    // one liner node with no props, e.g. `- role "name" [aria]`
     resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
     childResult.resolved.length === 1 &&
     childResult.resolved[0].trimStart().startsWith('- text: ') &&
     !resolvedPseudo.length
   ) {
-    // one liner node with text child, e.g. `- role "name" [props]: text`
+    // one liner node with text child, e.g. `- role "name" [aria]: text`
     const text = childResult.resolved[0].trimStart().slice('- text: '.length)
     resolved.push(`${indent}- ${resolvedKey}: ${text}`)
   } else {
     // multi-line node with children and/or props, e.g.
-    // - role "name" [props]:
-    //    - child
+    // - role "name" [aria]:
+    //    - /children: equal
     //    - /prop: value
+    //    - child
     resolved.push(`${indent}- ${resolvedKey}:`)
-    resolved.push(...childResult.resolved)
     resolved.push(...resolvedPseudo)
+    resolved.push(...childResult.resolved)
   }
 
-  return { resolved, pass }
+  return resolved
 }

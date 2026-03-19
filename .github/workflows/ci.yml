@@ -21,12 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-      - run: corepack enable
-      - run: pnpm i
-      - run: pnpm format --check
-      - run: pnpm run build
-      - run: pnpm typecheck
+      - uses: voidzero-dev/setup-vp@v1
+      - run: vp i
+      - run: vp check --no-lint
+      - run: vp run build
+      - run: vp run typecheck
 
   test:
     strategy:
@@ -36,9 +35,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-      - run: corepack enable
-      - run: pnpm i
-      - run: pnpm run build
-      - run: pnpm exec playwright install --with-deps
-      - run: pnpm run test
+      - uses: voidzero-dev/setup-vp@v1
+      - run: vp i
+      - run: vp run build
+      - run: vp exec playwright install --with-deps
+      - run: vp run test
