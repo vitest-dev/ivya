@@ -19,6 +19,8 @@ import {
   YAMLSeq,
 } from './yaml'
 
+// TODO: snapshot tests
+
 // ---------------------------------------------------------------------------
 // LineCounter (ported from vendor/yaml/tests/line-counter.ts)
 // ---------------------------------------------------------------------------
