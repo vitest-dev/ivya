@@ -381,8 +381,9 @@ function mergeNode(
   // Build directive line (/children) rendered before children,
   // and prop pseudo-lines rendered after children.
   const resolvedDirective: string[] = []
-  if (template.containerMode && template.containerMode !== 'contain')
+  if (template.containerMode && template.containerMode !== 'contain') {
     resolvedDirective.push(`${indent}  - /children: ${template.containerMode}`)
+  }
 
   const resolvedPseudo: string[] = []
   const allPropKeys = new Set([
