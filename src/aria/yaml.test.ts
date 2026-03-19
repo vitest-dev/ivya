@@ -4,6 +4,10 @@
  * Ported from vendor/yaml/tests/, scoped to the subset we support:
  * sequences, maps, scalars (plain, quoted, numeric, boolean),
  * indentation nesting, error reporting with positions.
+ *
+ * Original test sources:
+ *   Copyright Eemeli Aro <eemeli@gmail.com>
+ *   ISC License — see src/aria/yaml.ts for full text.
  */
 
 import { describe, expect, test } from 'vitest'
