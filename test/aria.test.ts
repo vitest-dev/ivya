@@ -3983,8 +3983,8 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - link:
-        - text: Click here
         - /url: /.*example.com/
+        - text: Click here
       ",
         "pass": false,
       }
@@ -4016,8 +4016,8 @@ describe('matchAriaTree', () => {
       ",
         "expected": "
       - link:
-        - text: Wrong text
         - /url: /.*example.com/
+        - text: Wrong text
       ",
         "pass": false,
       }
@@ -4228,6 +4228,7 @@ describe('/children directive', () => {
       ",
         "expected": "
       - list:
+        - /children: equal
         - listitem: A
         - listitem: C
       ",
@@ -4267,6 +4268,7 @@ describe('/children directive', () => {
       ",
         "expected": "
       - list:
+        - /children: deep-equal
         - listitem: A
         - listitem: C
       ",
@@ -4313,7 +4315,7 @@ describe('/children directive', () => {
     `)
   })
 
-  test('renderAriaTemplate drops /children directive', () => {
+  test('renderAriaTemplate preserves /children directive', () => {
     const t = parseAriaTemplate(`
       - list:
         - /children: equal
@@ -4321,6 +4323,7 @@ describe('/children directive', () => {
     `)
     expect(renderAriaTemplate(t)).toMatchInlineSnapshot(`
       "- list:
+        - /children: equal
         - listitem: A"
     `)
   })
