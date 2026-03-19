@@ -1,9 +1,6 @@
 import { defineConfig } from 'vite-plus'
 
 export default defineConfig({
-  staged: {
-    '*': 'vp fmt',
-  },
   pack: {
     entry: ['src/index.ts', 'src/publicUtils.ts', 'src/aria/index.ts'],
     outDir: 'dist',
@@ -23,5 +20,8 @@ export default defineConfig({
     tabWidth: 2,
     printWidth: 85,
     ignorePatterns: [],
+  },
+  staged: {
+    '*': 'vp check --no-lint --fix',
   },
 })

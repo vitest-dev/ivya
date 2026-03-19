@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: voidzero-dev/setup-vp@v1
       - run: vp i
-      - run: vp fmt --check
+      - run: vp check --no-lint
       - run: vp run build
       - run: vp run typecheck
 
