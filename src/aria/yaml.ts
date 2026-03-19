@@ -107,7 +107,7 @@ export class YAMLError extends Error {
 // parseDocument
 // ---------------------------------------------------------------------------
 
-interface ParseOptions {
+export interface ParseOptions {
   keepSourceTokens?: boolean
   lineCounter?: LineCounter
   prettyErrors?: boolean
