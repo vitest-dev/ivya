@@ -252,8 +252,13 @@ function mergeChildLists(
     t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
   )
 
-  if (containerMode === 'equal') {
-    return mergeChildListsEqual(children, templates, indent)
+  if (containerMode === 'equal' || containerMode === 'deep-equal') {
+    return mergeChildListsEqual(
+      children,
+      templates,
+      indent,
+      containerMode === 'deep-equal'
+    )
   }
 
   const resolved: string[] = []
@@ -293,22 +298,25 @@ function mergeChildLists(
   return { resolved, pass: true }
 }
 
-/** Equal mode: positional 1:1 matching. Pass iff same count and every
- *  positional pair matches (full-depth). */
+/** Equal/deep-equal mode: positional 1:1 matching. Pass iff same count
+ *  and every positional pair matches (full-depth). When isDeepEqual is
+ *  true, descendant nodes without explicit containerMode inherit equal
+ *  semantics. */
 function mergeChildListsEqual(
   children: (AriaNode | string)[],
   templates: AriaTemplateNode[],
-  indent: string
+  indent: string,
+  isDeepEqual: boolean
 ): MergeResult {
   const resolved: string[] = []
 
   const allPositionalMatched =
     children.length === templates.length &&
-    children.every((c, i) => matchesNode(c, templates[i], false))
+    children.every((c, i) => matchesNode(c, templates[i], isDeepEqual))
 
   for (let ci = 0; ci < children.length; ci++) {
     if (ci < templates.length) {
-      resolved.push(...mergeNode(children[ci], templates[ci], indent))
+      resolved.push(...mergeNode(children[ci], templates[ci], indent, isDeepEqual))
     } else {
       resolved.push(...renderChildLines(children[ci], indent))
     }
@@ -329,7 +337,8 @@ function mergeChildListsEqual(
 function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
-  indent: string
+  indent: string,
+  isDeepEqual = false
 ): string[] {
   // Both text node
   if (typeof node === 'string' && template.kind === 'text') {
@@ -355,13 +364,12 @@ function mergeNode(
 
   // Recurse into children — if template omits children, the lens says
   // "don't care", so we skip (don't render children in resolved output).
+  // When isDeepEqual is inherited and the template doesn't set its own
+  // containerMode, propagate equal semantics to descendants.
+  const effectiveMode = template.containerMode ?? (isDeepEqual ? 'equal' : undefined)
   const childLines = template.children
-    ? mergeChildLists(
-        node.children,
-        template.children,
-        `${indent}  `,
-        template.containerMode
-      ).resolved
+    ? mergeChildLists(node.children, template.children, `${indent}  `, effectiveMode)
+        .resolved
     : []
 
   // Build directive line (/children) rendered before children,

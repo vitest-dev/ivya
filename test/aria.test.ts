@@ -4274,7 +4274,7 @@ describe('/children directive', () => {
     `)
   })
 
-  test('/children: deep-equal — extra children rejected (not yet deep)', () => {
+  test('/children: deep-equal — extra children rejected', () => {
     const html = `
       <ul>
         <li>A</li>
@@ -4282,7 +4282,6 @@ describe('/children directive', () => {
         <li>C</li>
       </ul>
     `
-    // deep-equal is not yet implemented; currently falls back to contain.
     expect(
       match(
         html,
@@ -4319,6 +4318,58 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: deep-equal — propagates equal to descendants', () => {
+    // Inner list has 2 items but template only mentions 1.
+    // With contain this would pass; deep-equal rejects it.
+    const html = `
+      <ul>
+        <li>
+          <ul>
+            <li>X</li>
+            <li>Y</li>
+          </ul>
+        </li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: deep-equal
+          - listitem:
+            - list:
+              - listitem: X
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem:
+          - list:
+            - listitem: X
+            - listitem: "Y"
+      ",
+        "actualResolved": "
+      - list:
+        - listitem:
+          - list:
+            - listitem: X
+            - listitem: "Y"
+      ",
+        "expected": "
+      - list:
+        - /children: deep-equal
+        - listitem:
+          - list:
+            - listitem: X
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
   test('/children: contain — behaves the same as default', () => {
     const html = `
       <ul>
@@ -4335,8 +4386,7 @@ describe('/children directive', () => {
           - /children: contain
           - listitem: A
           - listitem: C
-      `,
-        { assertInvariant: false }
+      `
       )
     ).toMatchInlineSnapshot(`
       {
