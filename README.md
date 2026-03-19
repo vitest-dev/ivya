@@ -56,6 +56,20 @@ All query methods follow the same rules described in the [Playwright documentati
 - `ivya.queryAllByPlaceholder(matcher: string | RegExp, options?: { exact?: boolean }): Element[]`
 - `ivya.queryAllByAltText(matcher: string | RegExp, options?: { exact?: boolean }): Element[]`
 
+## Development
+
+This project uses [Vite+](https://viteplus.dev/). Try `vp` for interactive prompts.
+
+```sh
+# install dependencies and setup commit hooks
+vp install
+
+# ensure `vp run ...` to invoke package.json scripts
+vp run dev
+vp run build
+vp run test
+```
+
 ## See more
 
 - [Locators guide in Playwright's documentation](https://playwright.dev/docs/locators#locator-operators)
