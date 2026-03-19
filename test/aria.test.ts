@@ -4410,6 +4410,65 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: equal — resolved preserves directive on matched branch, purges on failed', () => {
+    // Two sibling lists both with /children: equal.
+    // First list matches exactly → directive preserved in resolved.
+    // Second list has extra child → matchesNode fails, branch re-rendered
+    // from actual DOM (directive lost).
+    const html = `
+      <ul><li>A</li><li>B</li></ul>
+      <ul><li>X</li><li>Y</li><li>Z</li></ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - list:
+          - /children: equal
+          - listitem: A
+          - listitem: B
+        - list:
+          - /children: equal
+          - listitem: X
+          - listitem: Z
+      `
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      - list:
+        - listitem: X
+        - listitem: "Y"
+        - listitem: Z
+      ",
+        "actualResolved": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      - list:
+        - listitem: X
+        - listitem: "Y"
+        - listitem: Z
+      ",
+        "expected": "
+      - list:
+        - /children: equal
+        - listitem: A
+        - listitem: B
+      - list:
+        - /children: equal
+        - listitem: X
+        - listitem: Z
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
   test('/children: contain — behaves the same as default', () => {
     const html = `
       <ul>
