@@ -58,7 +58,7 @@ All query methods follow the same rules described in the [Playwright documentati
 
 ## Development
 
-This project uses [Vite+](https://viteplus.dev/). Try `vp` for interactive prompts.
+This project uses [Vite+](https://viteplus.dev/). Follow [their guide](https://viteplus.dev/guide/) to install `vp` cli. Try `vp` for interactive prompts.
 
 ```sh
 # install dependencies and setup commit hooks
