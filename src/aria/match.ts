@@ -370,7 +370,6 @@ function mergeNode(
     `${indent}  `,
     template.containerMode ?? (isDeepEqual ? 'equal' : 'contain')
   )
-  const childLines = childResult.resolved
 
   // Build directive line (/children) rendered before children,
   // and prop pseudo-lines rendered after children.
@@ -399,16 +398,16 @@ function mergeNode(
 
   const resolved: string[] = []
 
-  if (!childLines.length && !resolvedPseudo.length) {
+  if (!childResult.resolved.length && !resolvedPseudo.length) {
     // one liner node with no props, e.g. `- role "name" [aria]`
     resolved.push(`${indent}- ${resolvedKey}`)
   } else if (
-    childLines.length === 1 &&
-    childLines[0].trimStart().startsWith('- text: ') &&
+    childResult.resolved.length === 1 &&
+    childResult.resolved[0].trimStart().startsWith('- text: ') &&
     !resolvedPseudo.length
   ) {
     // one liner node with text child, e.g. `- role "name" [aria]: text`
-    const text = childLines[0].trimStart().slice('- text: '.length)
+    const text = childResult.resolved[0].trimStart().slice('- text: '.length)
     resolved.push(`${indent}- ${resolvedKey}: ${text}`)
   } else {
     // multi-line node with children and/or props, e.g.
@@ -418,7 +417,7 @@ function mergeNode(
     //    - child
     resolved.push(`${indent}- ${resolvedKey}:`)
     resolved.push(...resolvedPseudo)
-    resolved.push(...childLines)
+    resolved.push(...childResult.resolved)
   }
 
   return resolved
