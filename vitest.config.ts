@@ -3,15 +3,34 @@ import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   test: {
-    dir: './test',
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [
-        {
-          browser: 'chromium',
+    projects: [
+      {
+        test: {
+          name: 'browser',
+          dir: './test',
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [
+              {
+                browser: 'chromium',
+              },
+              {
+                browser: 'firefox',
+              },
+              {
+                browser: 'webkit',
+              },
+            ],
+          },
         },
-      ],
-    },
+      },
+      {
+        test: {
+          name: 'unit',
+          dir: './src',
+        },
+      },
+    ],
   },
 })

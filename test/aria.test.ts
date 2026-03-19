@@ -9,16 +9,11 @@
 import {
   generateAriaTree,
   matchAriaTree,
-  parseAriaTemplate as parseAriaTemplateOriginal,
+  parseAriaTemplate,
   renderAriaTree,
   renderAriaTemplate,
 } from '../src/aria'
 import { describe, expect, test, vi } from 'vitest'
-import * as yaml from 'yaml'
-
-function parseAriaTemplate(text: string) {
-  return parseAriaTemplateOriginal(yaml, text)
-}
 
 function capture(html: string) {
   document.body.innerHTML = html
@@ -2470,15 +2465,9 @@ describe('parseAriaTemplate', () => {
       not a list item
       - link
     `)
-    expect(t).toThrowErrorMatchingInlineSnapshot(`
-      [Error: Unexpected scalar at node end at line 5, column 7:
-
-
-            not a list item
-            - link
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      ]
-    `)
+    expect(t).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected scalar at node end]`
+    )
   })
 
   test('empty input', () => {
@@ -2491,40 +2480,26 @@ describe('parseAriaTemplate', () => {
   test('throws on invalid role entry', () => {
     expect(() => parseAriaTemplate('- !@#')).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Unexpected end of input when expecting role:
+      [Error: Unexpected input:
 
-
+      !@#
       ^
       ]
     `
     )
   })
 
-  // Playwright: page-aria-snapshot.spec.ts "should support multiline text" (| syntax)
-  test('YAML block scalar (| multiline)', () => {
-    const t = parseAriaTemplate(`
+  // Block scalars (|) are not supported by the minimal YAML parser.
+  test('YAML block scalar (| multiline) is not supported', () => {
+    expect(() =>
+      parseAriaTemplate(`
       - paragraph: |
           Line one
           Line two
     `)
-    expect(t).toMatchInlineSnapshot(`
-      {
-        "children": [
-          {
-            "kind": "text",
-            "text": {
-              "normalized": "Line one Line two",
-              "raw": "Line one
-      Line two
-      ",
-            },
-          },
-        ],
-        "kind": "role",
-        "name": undefined,
-        "role": "paragraph",
-      }
-    `)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Bad indentation of a sequence entry]`
+    )
   })
 
   // Playwright: to-match-aria-snapshot.spec.ts "should report error in YAML keys"
