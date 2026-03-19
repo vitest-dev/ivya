@@ -153,10 +153,6 @@ interface MergeResult {
   pass: boolean
 }
 
-/** Result of mergeNode — rendering only; pass/fail is decided by the caller
- *  via matchesNode, not by mergeNode itself. */
-type ResolvedLines = string[]
-
 function isRegexName(name?: AriaRegex | string): name is AriaRegex {
   return typeof name === 'object' && name !== null && 'pattern' in name
 }
@@ -351,7 +347,7 @@ function mergeNode(
   node: AriaNode | string,
   template: AriaTemplateNode,
   indent: string
-): ResolvedLines {
+): string[] {
   // Both text node
   if (typeof node === 'string' && template.kind === 'text') {
     const matched = matchesTextValue(node, template.text)
