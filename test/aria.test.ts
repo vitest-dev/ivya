@@ -4293,6 +4293,49 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: deep-equal at root — extra children rejected', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - /children: deep-equal
+        - list:
+          - listitem: A
+          - listitem: C
+      `,
+        { assertInvariant: false }
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+        - listitem: C
+      ",
+        "expected": "
+      - list:
+        - listitem: A
+        - listitem: C
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
   test('/children: deep-equal — propagates equal to descendants', () => {
     // Inner list has 2 items but template only mentions 1.
     // With contain this would pass; deep-equal rejects it.
