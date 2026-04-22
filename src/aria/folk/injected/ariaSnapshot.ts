@@ -32,8 +32,6 @@ const defaultBox: aria.AriaBox = { visible: true, inline: false }
 // capture – DOM -> AriaNode tree
 // ---------------------------------------------------------------------------
 
-// DIVERGENCE(playwright): add public JSDoc so downstream bundled declarations
-// carry descriptions for the exported ARIA helpers.
 /**
  * Captures the ARIA tree for a DOM subtree.
  *
