@@ -120,9 +120,18 @@ export function matchAriaTree(
   // decides pass/fail (via matchesNode); mergeNode below it is purely
   // rendering. Wrapping in single-element lists ensures that contract
   // holds from the top level down.
+
+  const children =
+    typeof root !== 'string' && root.role === 'fragment' ? root.children : [root]
+
+  const templates =
+    template.kind === 'role' && template.role === 'fragment'
+      ? template.children || []
+      : [template]
+
   const result = mergeChildLists(
-    [root],
-    [template],
+    children,
+    templates,
     '',
     // Propagate container mode on root fragments
     template.kind === 'role' && template.role === 'fragment'
@@ -252,14 +261,6 @@ function mergeChildLists(
   indent: string,
   containerMode?: ContainerMode
 ): MergeResult {
-  // fragment = its children (a fragment has no semantics of its own)
-  children = children.flatMap((c) =>
-    typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
-  )
-  templates = templates.flatMap((t) =>
-    t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
-  )
-
   if (containerMode === 'equal' || containerMode === 'deep-equal') {
     return mergeChildListsEqual(
       children,

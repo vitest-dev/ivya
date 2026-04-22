@@ -4336,7 +4336,6 @@ describe('/children directive', () => {
     `)
   })
 
-
   test('/children: deep-equal only at root', () => {
     const html = ``
     expect(
