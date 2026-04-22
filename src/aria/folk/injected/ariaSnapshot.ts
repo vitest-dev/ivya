@@ -32,6 +32,13 @@ const defaultBox: aria.AriaBox = { visible: true, inline: false }
 // capture – DOM -> AriaNode tree
 // ---------------------------------------------------------------------------
 
+// DIVERGENCE(playwright): add public JSDoc so downstream bundled declarations
+// carry descriptions for the exported ARIA helpers.
+/**
+ * Captures the ARIA tree for a DOM subtree.
+ *
+ * The returned tree is the low-level structure used by ARIA snapshot matching.
+ */
 export function generateAriaTree(rootElement: Element): aria.AriaNode {
   const visited = new Set<Node>()
 
@@ -310,6 +317,9 @@ export function renderNodeLines(
   }
 }
 
+/**
+ * Renders a captured ARIA tree to the textual snapshot format.
+ */
 export function renderAriaTree(root: aria.AriaNode): string {
   const lines: string[] = []
   const nodesToRender = root.role === 'fragment' ? root.children : [root]

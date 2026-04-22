@@ -24,6 +24,9 @@ export { renderAriaTemplate } from './template'
 
 export { matchAriaTree } from './match'
 
+/**
+ * Parses textual ARIA snapshot syntax into a template tree.
+ */
 export function parseAriaTemplate(text: string): AriaTemplateNode {
   return parseAriaSnapshotUnsafe(yaml, text)
 }
