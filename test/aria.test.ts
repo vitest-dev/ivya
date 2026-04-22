@@ -4385,6 +4385,45 @@ describe('/children directive', () => {
     `)
   })
 
+  // TODO
+  test('/children: equal at root — partial update drops directive from resolved', () => {
+    const html = `
+      <ul>
+        <li>a</li>
+        <li>b</li>
+      </ul>
+    `
+    expect(
+      match(
+        html,
+        `
+        - /children: equal
+        - list:
+          - listitem: a
+      `
+        //  { assertInvariant: true }
+      )
+    ).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: a
+        - listitem: b
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: a
+      ",
+        "expected": "
+      - /children: equal
+      - list:
+        - listitem: a
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
   test('/children: equal — resolved preserves directive on matched branch, purges on failed', () => {
     // Two sibling lists both with /children: equal.
     // First list matches exactly → directive preserved in resolved.
@@ -4487,12 +4526,15 @@ describe('/children directive', () => {
 
   test('renderAriaTemplate preserves /children directive', () => {
     const t = parseAriaTemplate(`
+      - /children: equal
       - list:
         - /children: equal
         - listitem: A
     `)
-    expect(renderAriaTemplate(t)).toMatchInlineSnapshot(`
-      "- list:
+    expect('\n' + renderAriaTemplate(t)).toMatchInlineSnapshot(`
+      "
+      - /children: equal
+      - list:
         - /children: equal
         - listitem: A"
     `)

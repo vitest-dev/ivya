@@ -22,9 +22,10 @@ import { formatTextValue, formatNameValue } from './template'
 //   through the template's lens but has no say in pass/fail (returns string[],
 //   not a boolean). This separation works because matchesNode already
 //   traverses the full subtree; re-checking at the node level would be
-//   redundant. The entry point (matchAriaTree) wraps root and template in
-//   single-element lists so that mergeChildLists — and its pass/fail
-//   authority — is always the top-level driver.
+//   redundant. The entry point (matchAriaTree) first normalizes the root pair
+//   into a top-level list merge, preserving fragment wrapper /children mode,
+//   so mergeChildLists — and its pass/fail authority — is always the top-level
+//   driver.
 //
 // folk's renderNodeLines is used for actual-side rendering. Only the merge
 // assembly and template rendering (which Playwright doesn't need) are
@@ -42,13 +43,13 @@ import { formatTextValue, formatNameValue } from './template'
 //   Playwright takes a different approach: instead of flattening, it treats
 //   fragment as a wildcard role (matches any node) and relies on the entry
 //   point to walk root.children directly. Both are equally sound because
-//   fragment nodes never carry meaningful attributes or containerMode in
-//   practice — the parser only sets containerMode on top-level fragments,
-//   then unwraps single-child ones, so surviving fragments always have
-//   multiple children whose list semantics our flatten preserves correctly.
-//   The tradeoff is decomposition: Playwright keeps all match semantics in
-//   matchesNode; we split fragment handling into mergeChildLists, which is
-//   natural since we need that function anyway for three-way merge.
+//   fragment nodes never carry meaningful attributes in practice. The only
+//   semantic fragment wrapper we preserve is the parser-created top-level
+//   fragment's containerMode; mergeRoot carries that mode into the top-level
+//   list merge before mergeChildLists flattens the wrapper. The tradeoff is
+//   decomposition: Playwright keeps all match semantics in matchesNode; we
+//   split fragment handling into mergeRoot + mergeChildLists, which is natural
+//   since we need list-level control anyway for three-way merge.
 //   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
 //   (matchesNode, matchesNodeDeep)
 //
@@ -115,12 +116,20 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // Enter through mergeChildLists — this is intentional, not just for
-  // fragment normalization. mergeChildLists is the only function that
-  // decides pass/fail (via matchesNode); mergeNode below it is purely
-  // rendering. Wrapping in single-element lists ensures that contract
-  // holds from the top level down.
-  const result = mergeChildLists([root], [template], '')
+  // Enter through mergeRoot/mergeChildLists — this is intentional, not just
+  // for fragment normalization. mergeChildLists is the only function that
+  // decides pass/fail (via matchesNode); mergeRoot exists only to preserve
+  // top-level fragment wrapper semantics while converting the root pair into
+  // the initial child-list merge problem. mergeNode below that is purely
+  // rendering.
+  const result = mergeChildLists(
+    [root],
+    [template],
+    '',
+    template.kind === 'role' && template.role === 'fragment'
+      ? template.containerMode
+      : undefined
+  )
 
   return {
     pass: result.pass,
