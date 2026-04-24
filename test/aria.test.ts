@@ -2471,10 +2471,8 @@ describe('parseAriaTemplate', () => {
   })
 
   test('empty input', () => {
-    const t = () => parseAriaTemplate(``)
-    expect(t).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
-    )
+    const t = parseAriaTemplate(``)
+    expect(t).toEqual({ kind: 'role', role: 'fragment' })
   })
 
   test('throws on invalid role entry', () => {
