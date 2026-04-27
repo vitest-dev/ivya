@@ -3686,9 +3686,37 @@ describe('matchAriaTree', () => {
   // and containsList(anything, []) returns true (vacuous truth).
   // Same semantics as Playwright — "I don't care what's here."
   test('empty template', () => {
-    expect(() => match('<p>anything</p>', '')).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
-    )
+    expect(match('<p>anything</p>', '')).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: anything
+      ",
+        "actualResolved": "
+
+      ",
+        "expected": "
+
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('empty aria tree', () => {
+    expect(match('<div aria-hidden="true">Hidden</div>', '')).toMatchInlineSnapshot(`
+      {
+        "actual": "
+
+      ",
+        "actualResolved": "
+
+      ",
+        "expected": "
+
+      ",
+        "pass": true,
+      }
+    `)
   })
 
   // -- Gap: deeply nested mismatch
