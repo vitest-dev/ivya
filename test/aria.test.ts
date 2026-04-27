@@ -240,6 +240,19 @@ describe('basic', () => {
     `)
   })
 
+  test('empty aria tree', () => {
+    const result = runPipeline('<div aria-hidden="true">Hidden</div>')
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [],
+        "pass": true,
+        "rendered": "
+
+      ",
+      }
+    `)
+  })
+
   test('checkbox states', () => {
     const result = runPipeline(`
       <div role="checkbox" aria-checked="true" aria-label="A"></div>
@@ -2422,6 +2435,29 @@ describe('parseAriaTemplate', () => {
     `)
   })
 
+  test('nested scalar text child', () => {
+    const t = parseAriaTemplate(`
+      - button:
+          Submit
+    `)
+    expect(t).toMatchInlineSnapshot(`
+      {
+        "children": [
+          {
+            "kind": "text",
+            "text": {
+              "normalized": "Submit",
+              "raw": "Submit",
+            },
+          },
+        ],
+        "kind": "role",
+        "name": undefined,
+        "role": "button",
+      }
+    `)
+  })
+
   test('regex text node', () => {
     const t = parseAriaTemplate('- text: /hello \\d+/')
     expect(t).toMatchInlineSnapshot(`
@@ -2471,8 +2507,20 @@ describe('parseAriaTemplate', () => {
   })
 
   test('empty input', () => {
-    const t = () => parseAriaTemplate(``)
-    expect(t).toThrowErrorMatchingInlineSnapshot(
+    const t = parseAriaTemplate(``)
+    expect(t).toEqual({ kind: 'role', role: 'fragment' })
+  })
+
+  test('non sequence', () => {
+    expect(() =>
+      parseAriaTemplate(`hello: world`)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
+    expect(() => parseAriaTemplate(`hello`)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
+    expect(() => parseAriaTemplate(`1234`)).toThrowErrorMatchingInlineSnapshot(
       `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
     )
   })
@@ -3688,9 +3736,20 @@ describe('matchAriaTree', () => {
   // and containsList(anything, []) returns true (vacuous truth).
   // Same semantics as Playwright — "I don't care what's here."
   test('empty template', () => {
-    expect(() => match('<p>anything</p>', '')).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
-    )
+    expect(match('<p>anything</p>', '')).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: anything
+      ",
+        "actualResolved": "
+
+      ",
+        "expected": "
+
+      ",
+        "pass": true,
+      }
+    `)
   })
 
   // -- Gap: deeply nested mismatch
