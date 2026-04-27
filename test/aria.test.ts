@@ -240,6 +240,19 @@ describe('basic', () => {
     `)
   })
 
+  test('empty aria tree', () => {
+    const result = runPipeline('<div aria-hidden="true">Hidden</div>')
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [],
+        "pass": true,
+        "rendered": "
+
+      ",
+      }
+    `)
+  })
+
   test('checkbox states', () => {
     const result = runPipeline(`
       <div role="checkbox" aria-checked="true" aria-label="A"></div>
@@ -3690,23 +3703,6 @@ describe('matchAriaTree', () => {
       {
         "actual": "
       - paragraph: anything
-      ",
-        "actualResolved": "
-
-      ",
-        "expected": "
-
-      ",
-        "pass": true,
-      }
-    `)
-  })
-
-  test('empty aria tree', () => {
-    expect(match('<div aria-hidden="true">Hidden</div>', '')).toMatchInlineSnapshot(`
-      {
-        "actual": "
-
       ",
         "actualResolved": "
 
