@@ -2435,6 +2435,29 @@ describe('parseAriaTemplate', () => {
     `)
   })
 
+  test('nested scalar text child', () => {
+    const t = parseAriaTemplate(`
+      - button:
+          Submit
+    `)
+    expect(t).toMatchInlineSnapshot(`
+      {
+        "children": [
+          {
+            "kind": "text",
+            "text": {
+              "normalized": "Submit",
+              "raw": "Submit",
+            },
+          },
+        ],
+        "kind": "role",
+        "name": undefined,
+        "role": "button",
+      }
+    `)
+  })
+
   test('regex text node', () => {
     const t = parseAriaTemplate('- text: /hello \\d+/')
     expect(t).toMatchInlineSnapshot(`
@@ -2495,10 +2518,10 @@ describe('parseAriaTemplate', () => {
       `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
     )
     expect(() => parseAriaTemplate(`hello`)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Unexpected scalar at node end]`
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
     )
     expect(() => parseAriaTemplate(`1234`)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Unexpected scalar at node end]`
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
     )
   })
 

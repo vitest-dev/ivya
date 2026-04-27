@@ -243,6 +243,7 @@ class Parser {
       return this.parseMap(line.indent)
     }
     // Single scalar
+    this.pos++
     return this.parseScalarValue(line.content, line.offset, line)
   }
 
