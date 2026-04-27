@@ -240,6 +240,19 @@ describe('basic', () => {
     `)
   })
 
+  test('empty aria tree', () => {
+    const result = runPipeline('<div aria-hidden="true">Hidden</div>')
+    expect(result.snapshot).toMatchInlineSnapshot(`
+      {
+        "captured": [],
+        "pass": true,
+        "rendered": "
+
+      ",
+      }
+    `)
+  })
+
   test('checkbox states', () => {
     const result = runPipeline(`
       <div role="checkbox" aria-checked="true" aria-label="A"></div>
@@ -2471,9 +2484,21 @@ describe('parseAriaTemplate', () => {
   })
 
   test('empty input', () => {
-    const t = () => parseAriaTemplate(``)
-    expect(t).toThrowErrorMatchingInlineSnapshot(
+    const t = parseAriaTemplate(``)
+    expect(t).toEqual({ kind: 'role', role: 'fragment' })
+  })
+
+  test('non sequence', () => {
+    expect(() =>
+      parseAriaTemplate(`hello: world`)
+    ).toThrowErrorMatchingInlineSnapshot(
       `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
+    expect(() => parseAriaTemplate(`hello`)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected scalar at node end]`
+    )
+    expect(() => parseAriaTemplate(`1234`)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected scalar at node end]`
     )
   })
 
@@ -3688,9 +3713,20 @@ describe('matchAriaTree', () => {
   // and containsList(anything, []) returns true (vacuous truth).
   // Same semantics as Playwright — "I don't care what's here."
   test('empty template', () => {
-    expect(() => match('<p>anything</p>', '')).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
-    )
+    expect(match('<p>anything</p>', '')).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - paragraph: anything
+      ",
+        "actualResolved": "
+
+      ",
+        "expected": "
+
+      ",
+        "pass": true,
+      }
+    `)
   })
 
   // -- Gap: deeply nested mismatch
