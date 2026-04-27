@@ -2488,6 +2488,20 @@ describe('parseAriaTemplate', () => {
     expect(t).toEqual({ kind: 'role', role: 'fragment' })
   })
 
+  test('non sequence', () => {
+    expect(() =>
+      parseAriaTemplate(`hello: world`)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Aria snapshot must be a YAML sequence, elements starting with " -"]`
+    )
+    expect(() => parseAriaTemplate(`hello`)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected scalar at node end]`
+    )
+    expect(() => parseAriaTemplate(`1234`)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Unexpected scalar at node end]`
+    )
+  })
+
   test('throws on invalid role entry', () => {
     expect(() => parseAriaTemplate('- !@#')).toThrowErrorMatchingInlineSnapshot(
       `
