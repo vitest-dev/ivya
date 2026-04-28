@@ -21,7 +21,17 @@ export default defineConfig({
     printWidth: 85,
     ignorePatterns: [],
   },
+  lint: {
+    rules: {
+      // covered by typecheck
+      'no-unused-vars': 'off',
+    },
+    options: {
+      typeAware: true,
+      typeCheck: true,
+    },
+  },
   staged: {
-    '*': 'vp check --no-lint --fix',
+    '*': 'vp check --fix',
   },
 })
