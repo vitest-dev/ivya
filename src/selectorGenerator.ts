@@ -528,7 +528,7 @@ function buildTextCandidates(
 }
 
 function makeSelectorForId(id: string) {
-  return /^[a-z][\w-]+$/i.test(id) ? `#${id}` : `[id="${cssEscape(id)}"]`
+  return /^[a-z][\w\-]+$/i.test(id) ? `#${id}` : `[id="${cssEscape(id)}"]`
 }
 
 function cssFallback(

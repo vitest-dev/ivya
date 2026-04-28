@@ -53,13 +53,13 @@ function yamlStringNeedsQuotes(str: string): boolean {
   if (str.length === 0) return true
   if (/^\s|\s$/.test(str)) return true
   if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/.test(str)) return true
-  if (str.startsWith('-')) return true
+  if (/^-/.test(str)) return true
   if (/[\n:](\s|$)/.test(str)) return true
   if (/\s#/.test(str)) return true
   if (/[\n\r]/.test(str)) return true
   if (/^[&*\],?!>|@"'#%]/.test(str)) return true
   if (/[{}`]/.test(str)) return true
-  if (str.startsWith('[')) return true
+  if (/^\[/.test(str)) return true
   if (
     !isNaN(Number(str)) ||
     ['y', 'n', 'yes', 'no', 'true', 'false', 'on', 'off', 'null'].includes(
