@@ -4444,25 +4444,20 @@ describe('/children directive', () => {
     `)
   })
 
-  // TODO
-  test('/children: equal at root — partial update drops directive from resolved', () => {
+  // TODO: partial update drops /children directive at root
+  test('/children: equal at root', () => {
     const html = `
       <ul>
         <li>a</li>
         <li>b</li>
       </ul>
     `
-    expect(
-      match(
-        html,
-        `
-        - /children: equal
-        - list:
-          - listitem: a
-      `
-        //  { assertInvariant: true }
-      )
-    ).toMatchInlineSnapshot(`
+    const template = `
+      - /children: equal
+      - list:
+        - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
       {
         "actual": "
       - list:
