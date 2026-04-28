@@ -4512,6 +4512,63 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: deep-equal at root - fail', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+      </ul>
+    `
+    const template = `
+      - /children: deep-equal
+      - list:
+        - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "expected": "
+      - /children: deep-equal
+      - list:
+        - listitem: a
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal at root - pass', () => {
+    const html = `
+      <div></div>
+    `
+    const template = `
+      - /children: deep-equal
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+
+      ",
+        "actualResolved": "
+      - /children: deep-equal
+      ",
+        "expected": "
+      - /children: deep-equal
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
   test('/children: equal at non root', () => {
     const html = `
       <main>
