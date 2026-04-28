@@ -22,9 +22,9 @@ import { formatTextValue, formatNameValue } from './template'
 //   through the template's lens but has no say in pass/fail (returns string[],
 //   not a boolean). This separation works because matchesNode already
 //   traverses the full subtree; re-checking at the node level would be
-//   redundant. The entry point (matchAriaTree) first converts the root into
-//   the initial child-list merge problem, so mergeChildLists — and its
-//   pass/fail authority — is always the top-level driver.
+//   redundant. The entry point (matchAriaTree) wraps root and template in
+//   single-element lists so that mergeChildLists — and its pass/fail
+//   authority — is always the top-level driver.
 //
 // folk's renderNodeLines is used for actual-side rendering. Only the merge
 // assembly and template rendering (which Playwright doesn't need) are
@@ -36,18 +36,19 @@ import { formatTextValue, formatNameValue } from './template'
 //   captureAriaTree always returns a fragment root; parseAriaTemplate may
 //   or may not (it unwraps single-child fragments, following Playwright).
 //
-//   Fragment role semantics are transparent, but fragment container metadata
-//   is not. We therefore keep fragments through matching/merging and strip
-//   only the rendered fragment shell in mergeNode. This lets a root-level
-//   /children directive behave like the same directive below any rendered
-//   role node.
+//   We normalize by flattening: fragment = its children. This happens
+//   inside mergeChildLists so every recursion level handles it uniformly.
 //
 //   Playwright takes a different approach: instead of flattening, it treats
 //   fragment as a wildcard role (matches any node) and relies on the entry
 //   point to walk root.children directly. Both are equally sound because
-//   fragment nodes never carry meaningful attributes in practice. The only
-//   semantic fragment wrapper we preserve is the parser-created top-level
-//   fragment's containerMode.
+//   fragment nodes never carry meaningful attributes or containerMode in
+//   practice — the parser only sets containerMode on top-level fragments,
+//   then unwraps single-child ones, so surviving fragments always have
+//   multiple children whose list semantics our flatten preserves correctly.
+//   The tradeoff is decomposition: Playwright keeps all match semantics in
+//   matchesNode; we split fragment handling into mergeChildLists, which is
+//   natural since we need that function anyway for three-way merge.
 //   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
 //   (matchesNode, matchesNodeDeep)
 //
@@ -114,26 +115,12 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // The captured root is usually a synthetic fragment; snapshots target its
-  // rendered children, not the fragment shell.
-  //
-  // A parser-created template fragment is also invisible, but it can own
-  // root-level /children metadata. Only that root wrapper-fragment case uses
-  // mergeContainer: it merges the two root child lists while preserving the
-  // wrapper's renderable metadata. Otherwise, match the single template node
-  // against the captured root children, preserving the usual `- button`
-  // ergonomics.
-  const actualRoots = root.role === 'fragment' ? root.children : [root]
-  const result =
-    template.kind === 'role' && template.role === 'fragment'
-      ? mergeContainer(
-          actualRoots,
-          template.children || [],
-          '',
-          template.containerMode,
-          template.containerMode
-        )
-      : mergeChildLists(actualRoots, [template], '')
+  // Enter through mergeChildLists — this is intentional, not just for
+  // fragment normalization. mergeChildLists is the only function that
+  // decides pass/fail (via matchesNode); mergeNode below it is purely
+  // rendering. Wrapping in single-element lists ensures that contract
+  // holds from the top level down.
+  const result = mergeChildLists([root], [template], '')
 
   return {
     pass: result.pass,
@@ -245,10 +232,6 @@ function renderChildLines(child: AriaNode | string, indent: string): string[] {
   const lines: string[] = []
   if (typeof child === 'string') {
     lines.push(`${indent}- text: ${child}`)
-  } else if (child.role === 'fragment') {
-    for (const fragmentChild of child.children) {
-      lines.push(...renderChildLines(fragmentChild, indent))
-    }
   } else {
     renderNodeLines(child, indent, lines)
   }
@@ -261,6 +244,14 @@ function mergeChildLists(
   indent: string,
   containerMode?: ContainerMode
 ): MergeResult {
+  // fragment = its children (a fragment has no semantics of its own)
+  children = children.flatMap((c) =>
+    typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
+  )
+  templates = templates.flatMap((t) =>
+    t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
+  )
+
   if (containerMode === 'equal' || containerMode === 'deep-equal') {
     return mergeChildListsEqual(
       children,
@@ -334,22 +325,6 @@ function mergeChildListsEqual(
   return { resolved, pass: allPositionalMatched }
 }
 
-function mergeContainer(
-  children: (AriaNode | string)[],
-  templates: AriaTemplateNode[],
-  indent: string,
-  containerMode?: ContainerMode,
-  directiveMode?: ContainerMode
-): MergeResult {
-  const childResult = mergeChildLists(children, templates, indent, containerMode)
-  const resolved: string[] = []
-  if (directiveMode && directiveMode !== 'contain') {
-    resolved.push(`${indent}- /children: ${directiveMode}`)
-  }
-  resolved.push(...childResult.resolved)
-  return { resolved, pass: childResult.pass }
-}
-
 /** Render a single actual node through the template's lens.
  *
  *  Intentionally returns only resolved lines, not pass/fail. This is
@@ -376,21 +351,6 @@ function mergeNode(
   // One text node and the other not
   if (typeof node === 'string' || template.kind === 'text') {
     return renderChildLines(node, indent)
-  }
-
-  if (template.role === 'fragment' && node.role === 'fragment') {
-    // A template fragment here is the parser-created root wrapper, not a
-    // user-visible ARIA role. matchAriaTree pairs it with the captured root
-    // fragment so root-level /children metadata has an owner during rendering.
-    // Render that wrapper as an invisible child-list container: preserve its
-    // /children metadata, but omit a role key/shell.
-    return mergeContainer(
-      node.children,
-      template.children || [],
-      indent,
-      template.containerMode ?? (isDeepEqual ? 'equal' : 'contain'),
-      template.containerMode
-    ).resolved
   }
 
   // Resolved key (e.g. `- heading "Hello" [level=1]`):
