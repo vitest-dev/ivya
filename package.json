@@ -1,6 +1,6 @@
 {
   "name": "ivya",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Fork of Playwright's locator resolution",
   "keywords": [
     "dom",
