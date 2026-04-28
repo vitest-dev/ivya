@@ -4478,6 +4478,46 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: equal at non root', () => {
+    const html = `
+      <main>
+        <ul>
+          <li>a</li>
+          <li>b</li>
+        </ul>
+      </main>
+    `
+    const template = `
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - main:
+        - list:
+          - listitem: a
+          - listitem: b
+      ",
+        "actualResolved": "
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+      ",
+        "expected": "
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
   test('/children: equal — resolved preserves directive on matched branch, purges on failed', () => {
     // Two sibling lists both with /children: equal.
     // First list matches exactly → directive preserved in resolved.
