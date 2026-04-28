@@ -120,11 +120,19 @@ export function matchAriaTree(
   // decides pass/fail (via matchesNode); mergeNode below it is purely
   // rendering. Wrapping in single-element lists ensures that contract
   // holds from the top level down.
-  const result = mergeChildLists([root], [template], '')
+  const rootContainerMode =
+    template.kind === 'role' && template.role === 'fragment'
+      ? template.containerMode
+      : undefined
+  const result = mergeChildLists([root], [template], '', rootContainerMode)
+  const resolved = result.resolved
+  if (result.pass && rootContainerMode && rootContainerMode !== 'contain') {
+    resolved.unshift(`- /children: ${rootContainerMode}`)
+  }
 
   return {
     pass: result.pass,
-    resolved: result.resolved.join('\n'),
+    resolved: resolved.join('\n'),
   }
 }
 

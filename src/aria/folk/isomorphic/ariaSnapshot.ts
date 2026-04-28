@@ -505,8 +505,8 @@ export class KeyParser {
     this._throwError('Unterminated string')
   }
 
-  private _throwError(message: string, offset: number = 0): never {
-    throw new ParserError(message, offset || this._pos)
+  private _throwError(message: string, offset?: number): never {
+    throw new ParserError(message, offset ?? this._pos)
   }
 
   private _readRegex(): AriaRegex {
@@ -583,7 +583,14 @@ export class KeyParser {
   _parse(): AriaTemplateRoleNode {
     this._skipWhitespace()
 
-    const role = this._readIdentifier('role') as AriaTemplateRoleNode['role']
+    const roleStart = this._pos
+    const role = this._readIdentifier('role')
+    if (role === 'fragment') {
+      this._throwError(
+        'Role "fragment" is reserved for the internal root wrapper',
+        roleStart
+      )
+    }
     this._skipWhitespace()
     // DIVERGENCE(playwright): upstream uses `|| ''`, which makes
     // `- heading [level=1]` produce name="" instead of name=undefined.
@@ -591,7 +598,11 @@ export class KeyParser {
     // (falsy), causing asymmetry between matching and rendering.
     // Upstream: https://github.com/microsoft/playwright/blob/main/packages/playwright-core/src/utils/isomorphic/ariaSnapshot.ts
     const name = this._readStringOrRegex() || undefined
-    const result: AriaTemplateRoleNode = { kind: 'role', role, name }
+    const result: AriaTemplateRoleNode = {
+      kind: 'role',
+      role: role as AriaTemplateRoleNode['role'],
+      name,
+    }
     this._readAttributes(result)
     this._skipWhitespace()
     if (!this._eof()) this._throwError('Unexpected input')

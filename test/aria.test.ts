@@ -2537,6 +2537,40 @@ describe('parseAriaTemplate', () => {
     )
   })
 
+  test('unknown alphabetic role is accepted', () => {
+    expect(parseAriaTemplate('- madeuprole')).toMatchInlineSnapshot(`
+      {
+        "kind": "role",
+        "name": undefined,
+        "role": "madeuprole",
+      }
+    `)
+  })
+
+  test('explicit fragment role is rejected', () => {
+    expect(() => parseAriaTemplate('- fragment'))
+      .toThrowErrorMatchingInlineSnapshot(`
+      [Error: Role "fragment" is reserved for the internal root wrapper:
+
+      fragment
+      ^
+      ]
+    `)
+    expect(() =>
+      parseAriaTemplate(`
+      - main:
+        - fragment:
+          - button
+    `)
+    ).toThrowErrorMatchingInlineSnapshot(`
+      [Error: Role "fragment" is reserved for the internal root wrapper:
+
+      fragment
+      ^
+      ]
+    `)
+  })
+
   // Block scalars (|) are not supported by the minimal YAML parser.
   test('YAML block scalar (| multiline) is not supported', () => {
     expect(() =>
@@ -4444,7 +4478,6 @@ describe('/children directive', () => {
     `)
   })
 
-  // TODO: partial update drops /children directive at root
   test('/children: equal at root', () => {
     const html = `
       <ul>
@@ -4465,6 +4498,7 @@ describe('/children directive', () => {
         - listitem: b
       ",
         "actualResolved": "
+      - /children: equal
       - list:
         - listitem: a
       ",
