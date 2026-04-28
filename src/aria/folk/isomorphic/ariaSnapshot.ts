@@ -505,8 +505,8 @@ export class KeyParser {
     this._throwError('Unterminated string')
   }
 
-  private _throwError(message: string, offset: number = this._pos): never {
-    throw new ParserError(message, offset)
+  private _throwError(message: string, offset: number = 0): never {
+    throw new ParserError(message, offset || this._pos)
   }
 
   private _readRegex(): AriaRegex {
