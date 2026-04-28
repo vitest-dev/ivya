@@ -2550,12 +2550,12 @@ describe('parseAriaTemplate', () => {
   test('explicit fragment role is rejected', () => {
     expect(() => parseAriaTemplate('- fragment'))
       .toThrowErrorMatchingInlineSnapshot(`
-      [Error: Role "fragment" is reserved for the internal root wrapper:
+        [Error: Invalid role "fragment":
 
-      fragment
-      ^
-      ]
-    `)
+        fragment
+                ^
+        ]
+      `)
     expect(() =>
       parseAriaTemplate(`
       - main:
@@ -2563,10 +2563,10 @@ describe('parseAriaTemplate', () => {
           - button
     `)
     ).toThrowErrorMatchingInlineSnapshot(`
-      [Error: Role "fragment" is reserved for the internal root wrapper:
+      [Error: Invalid role "fragment":
 
       fragment
-      ^
+              ^
       ]
     `)
   })
