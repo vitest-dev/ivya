@@ -70,6 +70,15 @@ vp run build
 vp run test
 ```
 
+Equivalently, you can also use `pnpm` directly:
+
+```sh
+pnpm install
+pnpm dev
+pnpm build
+pnpm test
+```
+
 ## See more
 
 - [Locators guide in Playwright's documentation](https://playwright.dev/docs/locators#locator-operators)

@@ -21,7 +21,16 @@ export default defineConfig({
     printWidth: 85,
     ignorePatterns: [],
   },
+  lint: {
+    categories: {
+      correctness: 'off',
+    },
+    options: {
+      typeAware: true,
+      typeCheck: true,
+    },
+  },
   staged: {
-    '*': 'vp check --no-lint --fix',
+    '*': 'vp check --fix',
   },
 })
