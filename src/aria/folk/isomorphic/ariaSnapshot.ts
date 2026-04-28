@@ -382,15 +382,13 @@ export function parseAriaSnapshot(
   yamlDoc.errors.forEach(addError)
   if (errors.length) return { errors, fragment }
 
+  if (!yamlDoc.contents) {
+    return { fragment, errors: [] }
+  }
   if (!(yamlDoc.contents instanceof yaml.YAMLSeq)) {
     errors.push({
       message: 'Aria snapshot must be a YAML sequence, elements starting with " -"',
-      range: yamlDoc.contents
-        ? convertRange(yamlDoc.contents!.range)
-        : [
-            { line: 0, col: 0 },
-            { line: 0, col: 0 },
-          ],
+      range: convertRange(yamlDoc.contents.range),
     })
   }
   if (errors.length) return { errors, fragment }

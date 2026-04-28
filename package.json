@@ -32,6 +32,8 @@
     "prepare": "vp config",
     "dev": "vp pack --watch --sourcemap",
     "build": "vp pack",
+    "lint": "vp check --no-lint",
+    "lint-fix": "vp check --no-lint --fix",
     "typecheck": "tsc -b",
     "test-chrome": "vitest --project='*chromium*'",
     "test-unit": "vitest --project=unit",
