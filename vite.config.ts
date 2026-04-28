@@ -22,9 +22,8 @@ export default defineConfig({
     ignorePatterns: [],
   },
   lint: {
-    rules: {
-      // covered by typecheck
-      'no-unused-vars': 'off',
+    categories: {
+      correctness: 'off',
     },
     options: {
       typeAware: true,
