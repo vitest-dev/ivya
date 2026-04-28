@@ -9,14 +9,14 @@
     "query",
     "search"
   ],
-  "homepage": "https://github.com/sheremet-va/ivya#readme",
+  "homepage": "https://github.com/vitest-dev/ivya#readme",
   "bugs": {
-    "url": "https://github.com/sheremet-va/ivya/issues"
+    "url": "https://github.com/vitest-dev/ivya/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sheremet-va/ivya.git"
+    "url": "git+https://github.com/vitest-dev/ivya.git"
   },
   "files": [
     "dist"
