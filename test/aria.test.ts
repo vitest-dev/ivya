@@ -2537,6 +2537,40 @@ describe('parseAriaTemplate', () => {
     )
   })
 
+  test('unknown alphabetic role is accepted', () => {
+    expect(parseAriaTemplate('- madeuprole')).toMatchInlineSnapshot(`
+      {
+        "kind": "role",
+        "name": undefined,
+        "role": "madeuprole",
+      }
+    `)
+  })
+
+  test('explicit fragment role is rejected', () => {
+    expect(() => parseAriaTemplate('- fragment'))
+      .toThrowErrorMatchingInlineSnapshot(`
+        [Error: Invalid role "fragment":
+
+        fragment
+                ^
+        ]
+      `)
+    expect(() =>
+      parseAriaTemplate(`
+      - main:
+        - fragment:
+          - button
+    `)
+    ).toThrowErrorMatchingInlineSnapshot(`
+      [Error: Invalid role "fragment":
+
+      fragment
+              ^
+      ]
+    `)
+  })
+
   // Block scalars (|) are not supported by the minimal YAML parser.
   test('YAML block scalar (| multiline) is not supported', () => {
     expect(() =>
@@ -4444,6 +4478,137 @@ describe('/children directive', () => {
     `)
   })
 
+  test('/children: equal at root', () => {
+    const html = `
+      <ul>
+        <li>a</li>
+        <li>b</li>
+      </ul>
+    `
+    const template = `
+      - /children: equal
+      - list:
+        - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: a
+        - listitem: b
+      ",
+        "actualResolved": "
+      - /children: equal
+      - list:
+        - listitem: a
+      ",
+        "expected": "
+      - /children: equal
+      - list:
+        - listitem: a
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('/children: deep-equal at root - fail', () => {
+    const html = `
+      <ul>
+        <li>A</li>
+        <li>B</li>
+      </ul>
+    `
+    const template = `
+      - /children: deep-equal
+      - list:
+        - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "actualResolved": "
+      - list:
+        - listitem: A
+        - listitem: B
+      ",
+        "expected": "
+      - /children: deep-equal
+      - list:
+        - listitem: a
+      ",
+        "pass": false,
+      }
+    `)
+  })
+
+  test('/children: deep-equal at root - pass', () => {
+    const html = `
+      <div></div>
+    `
+    const template = `
+      - /children: deep-equal
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+
+      ",
+        "actualResolved": "
+      - /children: deep-equal
+      ",
+        "expected": "
+      - /children: deep-equal
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
+  test('/children: equal at non root', () => {
+    const html = `
+      <main>
+        <ul>
+          <li>a</li>
+          <li>b</li>
+        </ul>
+      </main>
+    `
+    const template = `
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+    `
+    expect(match(html, template)).toMatchInlineSnapshot(`
+      {
+        "actual": "
+      - main:
+        - list:
+          - listitem: a
+          - listitem: b
+      ",
+        "actualResolved": "
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+      ",
+        "expected": "
+      - main:
+        - /children: equal
+        - list:
+          - listitem: a
+      ",
+        "pass": true,
+      }
+    `)
+  })
+
   test('/children: equal — resolved preserves directive on matched branch, purges on failed', () => {
     // Two sibling lists both with /children: equal.
     // First list matches exactly → directive preserved in resolved.
@@ -4546,12 +4711,15 @@ describe('/children directive', () => {
 
   test('renderAriaTemplate preserves /children directive', () => {
     const t = parseAriaTemplate(`
+      - /children: equal
       - list:
         - /children: equal
         - listitem: A
     `)
-    expect(renderAriaTemplate(t)).toMatchInlineSnapshot(`
-      "- list:
+    expect('\n' + renderAriaTemplate(t)).toMatchInlineSnapshot(`
+      "
+      - /children: equal
+      - list:
         - /children: equal
         - listitem: A"
     `)

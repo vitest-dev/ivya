@@ -36,19 +36,16 @@ import { formatTextValue, formatNameValue } from './template'
 //   captureAriaTree always returns a fragment root; parseAriaTemplate may
 //   or may not (it unwraps single-child fragments, following Playwright).
 //
-//   We normalize by flattening: fragment = its children. This happens
-//   inside mergeChildLists so every recursion level handles it uniformly.
+//   We normalize these synthetic root wrappers in matchAriaTree before
+//   entering the recursive merge. User-authored `fragment` template roles are
+//   rejected by the parser, so mergeChildLists never needs general fragment
+//   semantics.
 //
 //   Playwright takes a different approach: instead of flattening, it treats
 //   fragment as a wildcard role (matches any node) and relies on the entry
-//   point to walk root.children directly. Both are equally sound because
-//   fragment nodes never carry meaningful attributes or containerMode in
-//   practice — the parser only sets containerMode on top-level fragments,
-//   then unwraps single-child ones, so surviving fragments always have
-//   multiple children whose list semantics our flatten preserves correctly.
-//   The tradeoff is decomposition: Playwright keeps all match semantics in
-//   matchesNode; we split fragment handling into mergeChildLists, which is
-//   natural since we need that function anyway for three-way merge.
+//   point to walk root.children directly. Our root normalization follows the
+//   same boundary idea while keeping three-way merge decisions in
+//   mergeChildLists.
 //   See: vendor/playwright/packages/injected/src/ariaSnapshot.ts
 //   (matchesNode, matchesNodeDeep)
 //
@@ -115,17 +112,36 @@ export function matchAriaTree(
   root: AriaNode,
   template: AriaTemplateNode
 ): MatchAriaResult {
-  // Enter through mergeChildLists — this is intentional, not just for
-  // fragment normalization. mergeChildLists is the only function that
-  // decides pass/fail (via matchesNode); mergeNode below it is purely
-  // rendering. Wrapping in single-element lists ensures that contract
-  // holds from the top level down.
-  const result = mergeChildLists([root], [template], '')
+  // Normalize synthetic root fragments before entering the recursive merge.
+  // The template root fragment may own /children metadata, so lift its
+  // containerMode before unwrapping it into template roots.
+  const normalizedRoot = root.role === 'fragment' ? root.children : [root]
+  const normalizedTemplate = isAriaTemplateFragement(template)
+    ? (template.children ?? [])
+    : [template]
+  const containerMode = isAriaTemplateFragement(template)
+    ? template.containerMode
+    : undefined
+  const result = mergeChildLists(
+    normalizedRoot,
+    normalizedTemplate,
+    '',
+    containerMode
+  )
+  if (result.pass && containerMode && containerMode !== 'contain') {
+    result.resolved.unshift(`- /children: ${containerMode}`)
+  }
 
   return {
     pass: result.pass,
     resolved: result.resolved.join('\n'),
   }
+}
+
+function isAriaTemplateFragement(
+  template: AriaTemplateNode
+): template is AriaTemplateRoleNode {
+  return template.kind === 'role' && template.role === 'fragment'
 }
 
 // ---------------------------------------------------------------------------
@@ -244,13 +260,14 @@ function mergeChildLists(
   indent: string,
   containerMode?: ContainerMode
 ): MergeResult {
-  // fragment = its children (a fragment has no semantics of its own)
-  children = children.flatMap((c) =>
-    typeof c !== 'string' && c.role === 'fragment' ? c.children : [c]
-  )
-  templates = templates.flatMap((t) =>
-    t.kind === 'role' && t.role === 'fragment' ? t.children || [] : [t]
-  )
+  if (
+    children.some((c) => typeof c !== 'string' && c.role === 'fragment') ||
+    templates.some((t) => isAriaTemplateFragement(t))
+  ) {
+    throw new Error(
+      'Internal error: fragment wrappers must be unwrapped at matchAriaTree root'
+    )
+  }
 
   if (containerMode === 'equal' || containerMode === 'deep-equal') {
     return mergeChildListsEqual(

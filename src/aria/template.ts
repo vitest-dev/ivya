@@ -30,6 +30,9 @@ export function renderAriaTemplate(template: AriaTemplateNode): string {
   if (template.kind === 'text') {
     lines.push(`- text: ${formatTextValue(template.text)}`)
   } else if (template.role === 'fragment') {
+    if (template.containerMode && template.containerMode !== 'contain') {
+      lines.push(`- /children: ${template.containerMode}`)
+    }
     for (const child of template.children || [])
       renderTemplateLines(child, '', lines)
   } else {

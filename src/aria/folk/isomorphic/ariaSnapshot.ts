@@ -584,6 +584,12 @@ export class KeyParser {
     this._skipWhitespace()
 
     const role = this._readIdentifier('role') as AriaTemplateRoleNode['role']
+    // DIVERGENCE(playwright):
+    // we reject explicit `fragment` since that complicates matching algorithm invariant.
+    // this is only meant for internal role generated to model root templates.
+    if (role === 'fragment') {
+      this._throwError('Invalid role "fragment"')
+    }
     this._skipWhitespace()
     // DIVERGENCE(playwright): upstream uses `|| ''`, which makes
     // `- heading [level=1]` produce name="" instead of name=undefined.
