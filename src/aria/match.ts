@@ -115,22 +115,33 @@ export function matchAriaTree(
   // Normalize synthetic root fragments before entering the recursive merge.
   // The template root fragment may own /children metadata, so lift its
   // containerMode before unwrapping it into template roots.
-  const templateIsRootFragment =
-    template.kind === 'role' && template.role === 'fragment'
-  const rootContainerMode = templateIsRootFragment
+  const normalizedRoot = root.role === 'fragment' ? root.children : [root]
+  const normalizedTemplate = isAriaTemplateFragement(template)
+    ? (template.children ?? [])
+    : [template]
+  const containerMode = isAriaTemplateFragement(template)
     ? template.containerMode
     : undefined
-  const actualRoots = root.role === 'fragment' ? root.children : [root]
-  const templateRoots = templateIsRootFragment ? template.children || [] : [template]
-  const result = mergeChildLists(actualRoots, templateRoots, '', rootContainerMode)
-  if (result.pass && rootContainerMode && rootContainerMode !== 'contain') {
-    result.resolved.unshift(`- /children: ${rootContainerMode}`)
+  const result = mergeChildLists(
+    normalizedRoot,
+    normalizedTemplate,
+    '',
+    containerMode
+  )
+  if (result.pass && containerMode && containerMode !== 'contain') {
+    result.resolved.unshift(`- /children: ${containerMode}`)
   }
 
   return {
     pass: result.pass,
     resolved: result.resolved.join('\n'),
   }
+}
+
+function isAriaTemplateFragement(
+  template: AriaTemplateNode
+): template is AriaTemplateRoleNode {
+  return template.kind === 'role' && template.role === 'fragment'
 }
 
 // ---------------------------------------------------------------------------
@@ -251,7 +262,7 @@ function mergeChildLists(
 ): MergeResult {
   if (
     children.some((c) => typeof c !== 'string' && c.role === 'fragment') ||
-    templates.some((t) => t.kind === 'role' && t.role === 'fragment')
+    templates.some((t) => isAriaTemplateFragement(t))
   ) {
     throw new Error(
       'Internal error: fragment wrappers must be unwrapped at matchAriaTree root'
