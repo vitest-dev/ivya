@@ -125,14 +125,13 @@ export function matchAriaTree(
       ? template.containerMode
       : undefined
   const result = mergeChildLists([root], [template], '', rootContainerMode)
-  const resolved = result.resolved
   if (result.pass && rootContainerMode && rootContainerMode !== 'contain') {
-    resolved.unshift(`- /children: ${rootContainerMode}`)
+    result.resolved.unshift(`- /children: ${rootContainerMode}`)
   }
 
   return {
     pass: result.pass,
-    resolved: resolved.join('\n'),
+    resolved: result.resolved.join('\n'),
   }
 }
 
