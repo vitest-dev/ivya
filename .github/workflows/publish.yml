@@ -5,14 +5,13 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-  id-token: write
-
 jobs:
   publish:
     if: github.repository == 'vitest-dev/ivya'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     environment: Release
     steps:
       - uses: actions/checkout@v6
