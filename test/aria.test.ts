@@ -962,10 +962,13 @@ describe('basic', () => {
                           "visible": true,
                         },
                         "children": [],
+                        "disabled": undefined,
+                        "expanded": undefined,
                         "name": "H",
                         "props": {},
                         "receivesPointerEvents": true,
-                        "role": "cell",
+                        "role": "columnheader",
+                        "selected": false,
                       },
                     ],
                     "disabled": undefined,
@@ -1073,7 +1076,7 @@ describe('basic', () => {
       - table:
         - rowgroup:
           - row "H":
-            - cell "H"
+            - columnheader "H"
         - rowgroup:
           - row "D":
             - cell "D"
